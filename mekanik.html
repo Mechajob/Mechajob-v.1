@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Mechajob Standar - Dashboard Bengkel</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  /* --- 1. VARIABEL CSS --- */
+  :root{
+    --orange:#ff9800; 
+    --blue:#2a6ed4; 
+    --bg:#f4f7f9; 
+    --card:#ffffff;
+    --muted:#6b7280; 
+    --success:#28a745; 
+    --danger:#dc3545;
+  }
+  
+  /* --- 2. GAYA GLOBAL & UTAMA --- */
+  *{box-sizing:border-box}
+  body{font-family:Arial,sans-serif;margin:0;background:var(--bg);color:#111}
+  .wrap{max-width:1200px;margin:20px auto;padding:16px}
+  
+  /* --- 3. HEADER & TOMBOL --- */
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:var(--blue);
+    color:#fff;
+    padding:15px 20px;
+    border-radius:10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  header h1{margin:0;font-size:22px;font-weight: bold;}
+  button{cursor:pointer;border:0;padding:10px 15px;border-radius:8px;font-weight:700;transition: background 0.2s;}
+  .btn-ghost{background: #f8fafc;color: #333;border:1px solid #ddd;}
+  .btn-ghost:hover{background:#eee;}
+  .btn-pro{background:var(--orange);color:#fff}
+  .btn-pro:hover{background:#f57c00;}
+  .btn-danger{background:var(--danger);color:#fff}
+  .btn-danger:hover{background:#c82333;}
+  .btn-upgrade{background:var(--danger);color:#fff}
+  .btn-upgrade:hover{background:#c82333;}
+  
+  /* --- 4. LAYOUT GRID & KARTU --- */
+  .grid{display:grid;grid-template-columns:360px 1fr;gap:20px;margin-top:20px}
+  .card{background:var(--card);padding:20px;border-radius:12px;box-shadow:0 6px 20px rgba(10,10,20,0.05);position:relative;margin-bottom:20px;}
+  
+  /* --- 5. DETAIL PROFIL & STATISTIK --- */
+  .profile-logo{width:80px;height:80px;border-radius:10px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;box-shadow: 0 0 10px rgba(0,0,0,0.1);}
+  .muted{color:var(--muted);font-size:13px}
+  .small{font-size:13px;color:#333}
+  .stat-grid{display:flex;gap:10px;margin-top:15px}
+  .stat{flex:1;background:#f8fafc;padding:12px;border-radius:8px;text-align:center;border:1px solid #eee;}
+  .stat .num{font-size:24px;font-weight:800;color:var(--orange)}
+  .section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;padding-bottom:5px;border-bottom:1px solid #eee;}
+  
+  /* --- 6. TABEL DAN STATUS --- */
+  .table{width:100%;border-collapse:collapse;margin-top:10px;}
+  .table th,.table td{padding:10px 12px;border-bottom:1px solid #eee;text-align:left;font-size:14px}
+  .table th{background:var(--blue);color:#fff;text-transform:uppercase;font-size:12px}
+  .table tbody tr:last-child td { border-bottom: none; }
+  .table tbody tr:hover { background-color: #f7f7f7; }
+  
+  .status{padding:6px 10px;border-radius:999px;font-weight:700;color:#fff;font-size:12px}
+  .status.wait{background:var(--orange)}
+  .status.available{background:var(--success)}
+  .status.in-progress{background:var(--blue)}
+  .status.selesai{background:var(--success)}
+  .mini{padding:6px 10px;font-size:13px;background:var(--orange);color:white;border:1px solid var(--orange);}
+  .mini:hover{background:#f57c00;}
+
+  /* --- 7. OVERLAY & LOCK --- */
+  .locked-overlay{
+    position:absolute;inset:0;background:rgba(255,255,255,0.9);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    border-radius:10px;text-align:center;backdrop-filter:blur(3px);
+  }
+  .locked-overlay .lock-icon {
+      font-size: 40px;
+      color: var(--muted);
+      margin-bottom: 10px;
+  }
+  .profile-actions{
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+  
+  /* --- 8. RESPONSIVE --- */
+  @media(max-width:980px){
+    .grid{grid-template-columns:1fr; gap: 15px;}
+    .wrap {padding: 10px;}
+    header h1 { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1><i class="fas fa-tachometer-alt"></i> Mechajob — Dashboard Bengkel</h1>
+      <div class="muted" id="headerInfo">Memuat status akun...</div> 
+    </div>
+    <button class="btn-ghost" id="btnLogoutHeader">🚪 Logout</button>
+  </header>
+
+  <div class="grid">
+    <aside>
+      <div class="card">
+        <div style="display:flex;gap:15px;align-items:center">
+          <div class="profile-logo"><i class="fas fa-tools"></i></div>
+          <div>
+            <div style="font-weight:800; font-size: 16px;" id="shopName">Bengkel Maju Motor</div>
+            <div class="muted" id="shopAddr">Jl. Diponegoro No.45, Palu</div>
+            <div style="margin-top:6px" class="muted"><i class="fab fa-whatsapp"></i> WA: <span id="shopWA">0812-3456-7890</span></div>
+            <div style="margin-top:8px"><span class="status wait">STANDAR</span></div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px" class="section-title">
+          <strong><i class="fas fa-chart-bar"></i> Ringkasan Kinerja</strong>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><div class="num" id="statWaiting">3</div><div class="muted">Pesanan Menunggu</div></div>
+          <div class="stat"><div class="num" id="statTaken">2</div><div class="muted">Pesanan Diambil</div></div>
+          <div class="stat"><div class="num" id="statRevenue">Rp 1.2J</div><div class="muted">Est. Omzet</div></div>
+        </div>
+        <div style="margin-top:15px">
+          <div class="note"><i class="fas fa-list-check"></i> Layanan: Ganti Oli, Rem, AC</div>
+          <div class="note" style="margin-top:6px"><i class="fas fa-clock"></i> Jam Buka: 08:00 - 17:00</div>
+        </div>
+        
+        <div class="profile-actions">
+            <button class="btn-ghost" id="btnEditProfile"><i class="fas fa-cog"></i> Edit Profil</button>
+            <button class="btn-pro" id="btnUpgrade"><i class="fas fa-crown"></i> Upgrade ke PRO</button>
+            <button class="btn-danger" id="btnLogoutFooter"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="card">
+        <div class="section-title">
+          <strong><i class="fas fa-car-side"></i> Pesanan Baru Tersedia</strong>
+          <div class="muted">Batas Akun Standar: Ambil maks. 10 order yang belum selesai.</div>
+        </div>
+        <table class="table">
+          <thead><tr><th>ID</th><th>Nama</th><th>Kendaraan</th><th>Keluhan</th><th>Lokasi</th><th>Aksi</th></tr></thead>
+          <tbody id="tblCustomers">
+            </tbody>
+        </table>
+      </div>
+
+      <div class="card" style="min-height: 180px;">
+        <div class="section-title">
+          <strong><i class="fas fa-cogs"></i> Sparepart Dicari Pelanggan</strong>
+        </div>
+        <div class="locked-overlay">
+          <div class="lock-icon"><i class="fas fa-lock"></i></div>
+          <div>🔒 Fitur ini **terkunci**<br><small>Upgrade ke PRO untuk mengakses pencarian sparepart pelanggan</small></div>
+          <button class="btn-upgrade" style="margin-top:15px" id="btnUpgrade2"><i class="fas fa-bolt"></i> Upgrade ke PRO Sekarang</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title"><strong><i class="fas fa-receipt"></i> Orderan Saya</strong></div>
+        <table class="table">
+          <thead><tr><th>ID</th><th>Pelanggan</th><th>Layanan</th><th>Status</th><th>Total</th></tr></thead>
+          <tbody id="tblOrders">
+             </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script type="module">
+// =========================================================
+// 1. KONFIGURASI DAN IMPOR FIREBASE
+// =========================================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { 
+    getAuth, 
+    onAuthStateChanged, 
+    signOut 
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
+    authDomain: "mechajob-b7360.firebaseapp.com",
+      projectId: "mechajob-b7360",
+        storageBucket: "mechajob-b7360.firebasestorage.app",
+          messagingSenderId: "753002885541",
+            appId: "1:753002885541:web:96e4964dbd300193ff384c",
+              measurementId: "G-ZY3RS8WGP7"
+              };
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+let currentUserEmail = null; 
+
+// =========================================================
+// 2. STATE APLIKASI
+// =========================================================
+const STATE = {
+  shop:{name:"Bengkel Maju Motor",address:"Jl. Diponegoro No.45, Palu",wa:"081234567890"},
+  customers:[
+    {id:"C101",name:"Budi",vehicle:"Avanza",issue:"Ganti oli",location:"Jl. Merdeka"},
+    {id:"C102",name:"Siti",vehicle:"Brio",issue:"Servis AC",location:"Jl. Kemiri"},
+    {id:"C103",name:"Rizal",vehicle:"Xpander",issue:"Rem bunyi",location:"Jl. Rajawali"}
+  ],
+  orders:[
+    {id:"O011",cust:"Andi",service:"Servis AC",status:"selesai",total:200000},
+    {id:"O012",cust:"Rina",service:"Ganti oli",status:"in-progress",total:120000}
+  ]
+};
+
+// =========================================================
+// 3. FUNGSI RENDER UTAMA
+// =========================================================
+function render(){
+  
+  // 3a. Update Header Info
+  const headerInfoElement = document.getElementById('headerInfo');
+  if (currentUserEmail) {
+       headerInfoElement.innerHTML = `<i class="fas fa-user-circle"></i> ${currentUserEmail} • Akun Standar (Belum PRO)`;
+  } else {
+       headerInfoElement.innerHTML = `Memuat status akun...`;
+  }
+  
+  // 3b. Update Ringkasan Stat
+  const currentOrdersInProgress = STATE.orders.filter(o => o.status === 'in-progress').length;
+  const totalRevenue = STATE.orders
+    .filter(o => o.status === 'selesai')
+    .reduce((sum, o) => sum + o.total, 0);
+    
+  document.getElementById("statWaiting").textContent = STATE.customers.length;
+  document.getElementById("statTaken").textContent = currentOrdersInProgress; 
+  document.getElementById("statRevenue").textContent = `Rp ${formatCurrency(totalRevenue)}`;
+
+
+  // 3c. Render Pelanggan Mencari Bengkel
+  const ctbody=document.getElementById("tblCustomers");
+  ctbody.innerHTML="";
+  STATE.customers.forEach(c=>{
+    const tr=document.createElement("tr");
+    // Penting: Memastikan claimOrder tersedia secara global untuk onclick
+    tr.innerHTML=`
+    <td>${c.id}</td><td>${c.name}</td><td>${c.vehicle}</td><td>${c.issue}</td><td>${c.location}</td>
+    <td><button class="mini" onclick="window.claimOrder('${c.id}')">Ambil</button></td>`;
+    ctbody.appendChild(tr);
+  });
+  
+  // 3d. Render Orderan Saya
+  const otbody=document.getElementById("tblOrders");
+  otbody.innerHTML="";
+  STATE.orders.forEach(o=>{
+    const statusClass = o.status.toLowerCase().replace('-', ''); 
+    // Mengubah format status agar terlihat rapi
+    let statusText = o.status.replace('-', ' ').split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+    <td>${o.id}</td>
+    <td>${o.cust}</td>
+    <td>${o.service}</td>
+    <td><span class="status ${statusClass}">${statusText}</span></td>
+    <td>Rp ${formatCurrency(o.total)}</td>`;
+    otbody.appendChild(tr);
+  });
+}
+
+// =========================================================
+// 4. FUNGSI LOGIKA (Dipasang ke Window untuk Akses HTML)
+// =========================================================
+
+// Helper function to format currency (like 120000 -> 120.000)
+function formatCurrency(number) {
+    if (number === 0) return '0';
+    return number.toLocaleString('id-ID');
+}
+
+window.claimOrder = function(id){
+  const currentOrdersInProgress = STATE.orders.filter(o => o.status === 'in-progress').length;
+  const MAX_ORDERS = 10;
+  
+  // Batasan Akun STANDAR
+  if(currentOrdersInProgress >= MAX_ORDERS){
+    alert(`Batas ${MAX_ORDERS} order/minggu tercapai. Batas ini dihitung dari order yang belum selesai.\nUpgrade ke PRO untuk tanpa batas.`);
+    return;
+  }
+  
+  const c=STATE.customers.find(x=>x.id===id);
+  if(!c) return alert("Pesanan pelanggan tidak ditemukan");
+  
+  // LOGIKA DEMO: Pindahkan dari customers ke orders
+  const newOrder={id:"O"+(Math.floor(Math.random()*900)+100),cust:c.name,service:c.issue,status:"in-progress",total:150000}; // Nilai default
+  STATE.orders.push(newOrder);
+  STATE.customers=STATE.customers.filter(x=>x.id!==id);
+  
+  render();
+  alert(`Pesanan ${newOrder.id} dari ${c.name} berhasil diambil.`);
+}
+
+
+// =========================================================
+// 5. LOGIKA AUTENTIKASI FIREBASE & EVENT LISTENERS
+// =========================================================
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUserEmail = user.email; 
+        console.log("Pengguna login:", currentUserEmail);
+        
+        // Panggil render setelah mengetahui user terautentikasi
+        render(); 
+        
+    } else {
+        console.log("Tidak ada pengguna yang login. Mengarahkan ke halaman login.");
+        alert("Sesi berakhir. Silakan login kembali.");
+        window.location.href = "login mekanik.html"; // Pastikan ini mengarah ke file login yang benar
+    }
+});
+
+// Implementasi Logout Firebase (untuk kedua tombol)
+const handleLogout = () => {
+    signOut(auth).then(() => {
+        // Redirect ditangani oleh onAuthStateChanged jika user menjadi null
+    }).catch((error) => {
+        console.error("Logout Error:", error);
+        alert("Gagal logout: " + error.message);
+    });
+};
+
+document.getElementById("btnLogoutHeader").onclick = handleLogout;
+document.getElementById("btnLogoutFooter").onclick = handleLogout;
+
+
+// Event Listeners Lainnya
+document.getElementById("btnUpgrade").onclick=
+document.getElementById("btnUpgrade2").onclick=
+()=>alert("Fitur ini tersedia di Mechajob PRO.\nHubungi admin di 0812-xxxx-xxxx untuk upgrade akun Anda.");
+
+document.getElementById("btnEditProfile").onclick=()=>alert("Fitur Edit Profil hanya tersedia di versi PRO.");
+
+</script>
+</body>
+</html>
