@@ -291,7 +291,7 @@
             try {
                 await signInWithEmailAndPassword(auth, email, password);
                 alert(`Login berhasil: ${email}`);
-                window.location.href = "dashboard.html"; // pindah ke dashboard setelah login
+                window.location.href = "mekanik.html"; // pindah ke dashboard setelah login
             } catch (error) {
                 // Menangani error dari Firebase
                 let errorMessage = "Login gagal. Periksa kembali email dan kata sandi Anda.";
