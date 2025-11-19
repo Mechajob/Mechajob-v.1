@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mechajob - Pesan Perbaikan Motor</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <style>
+        /* --- 1. VARIABEL CSS --- */
+        :root {
+            --blue: #2a6ed4;
+            --orange: #ff9800;
+            --bg: #f4f7f9;
+            --card: #ffffff;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- 2. GAYA DASAR --- */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- 3. HEADER FIXED --- */
+        .header {
+            background-color: var(--blue);
+            color: white;
+            width: 100%;
+            text-align: center;
+            padding: 20px 0;
+            position: fixed;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        /* --- 4. FORM CONTAINER --- */
+        .form-container {
+            background-color: var(--card);
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px var(--shadow);
+            width: 80%;
+            max-width: 600px; 
+            margin: 90px auto 30px auto; 
+        }
+
+        .form-container h2 {
+            text-align: center;
+            color: var(--blue); 
+            margin-bottom: 5px;
+            font-size: 28px;
+            font-weight: 800;
+        }
+        
+        .form-container p.subtitle {
+            text-align: center;
+            color: #555;
+            margin-bottom: 30px;
+            font-size: 15px;
+            border-bottom: 2px dashed #eee;
+            padding-bottom: 15px;
+        }
+        
+        /* --- 5. GRUP FORM & INPUT --- */
+        h3 {
+            color: var(--orange);
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--orange);
+            padding-left: 10px;
+            font-size: 18px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-group label i {
+            margin-right: 8px;
+            color: var(--orange);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 5px rgba(42, 110, 212, 0.3);
+            outline: none;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+        }
+
+        /* --- 6. GAYA TOMBOL & TAUTAN --- */
+        .submit-btn {
+            background-color: var(--blue);
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background-color: #1a5ac9;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+        }
+
+        .back-link a {
+            color: var(--blue);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1><i class="fas fa-motorcycle"></i> Mechajob - Pesan Layanan Motor</h1>
+    </div>
+
+    <div class="form-container">
+        <h2>Pesan Perbaikan Motor</h2>
+        <p class="subtitle">Isi detail di bawah untuk menghubungkan Anda dengan mekanik terdekat.</p>
+        
+        <form action="/proses_pesan_perbaikan_motor" method="POST">
+            
+            <h3><i class="fas fa-user"></i> Detail Kontak Anda</h3>
+            
+            <div class="form-group">
+                <label for="nama"><i class="fas fa-id-card"></i> Nama Pelanggan</label>
+                <input type="text" id="nama" name="nama" required placeholder="Nama Anda (Sesuai KTP)">
+            </div>
+
+            <div class="form-group">
+                <label for="telepon"><i class="fas fa-phone-alt"></i> Nomor Telepon (Aktif WhatsApp)</label>
+                <input type="tel" id="telepon" name="telepon" required placeholder="Cth: 081234567890">
+            </div>
+            
+            <h3><i class="fas fa-motorcycle"></i> Detail Kendaraan</h3>
+            
+            <div class="form-group">
+                <label for="merk"><i class="fas fa-tag"></i> Merk dan Tipe Motor</label>
+                <input type="text" id="merk" name="merk" required placeholder="Cth: Honda Beat 2020 atau Yamaha NMAX">
+            </div>
+
+            <div class="form-group">
+                <label for="jenis_motor"><i class="fas fa-cogs"></i> Jenis Motor</label>
+                <select id="jenis_motor" name="jenis_motor" required>
+                    <option value="">Pilih Kategori Motor</option>
+                    <option value="matic">Skuter Matic (Vario, Beat, NMAX, dll)</option>
+                    <option value="bebek">Motor Bebek (Supra, Jupiter, dll)</option>
+                    <option value="sport">Motor Sport (Ninja, R15, CBR, dll)</option>
+                    <option value="lainnya">Lainnya / Klasik</option>
+                </select>
+            </div>
+            
+            <h3><i class="fas fa-map-marker-alt"></i> Masalah & Lokasi</h3>
+            
+            <div class="form-group">
+                <label for="masalah"><i class="fas fa-question-circle"></i> Masalah Utama (Pilih yang paling sesuai)</label>
+                <select id="masalah" name="masalah" required>
+                    <option value="">Pilih Masalah Utama</option>
+                    <option value="mogok">Motor Mogok / Tidak Bisa Hidup</option>
+                    <option value="ban_bocor">Ban Bocor / Pecah</option>
+                    <option value="kelistrikan">Masalah Kelistrikan (Lampu, Aki, dll)</option>
+                    <option value="rem">Masalah Rem / Kopling</option>
+                    <option value="tuneup">Perawatan Rutin / Ganti Oli</option>
+                    <option value="lainnya">Masalah Lainnya</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="deskripsi"><i class="fas fa-comment-dots"></i> Deskripsi Masalah Lebih Lanjut</label>
+                <textarea id="deskripsi" name="deskripsi" rows="4" required 
+                    placeholder="Contoh: Motor tidak mau distarter setelah kehujanan. Suara mesin kasar. Sebutkan juga kapan terakhir diservis."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="lokasi"><i class="fas fa-street-view"></i> Alamat Lengkap / Lokasi Anda Sekarang</label>
+                <input type="text" id="lokasi" name="lokasi" required placeholder="Cth: Jl. Anggrek No. 12, Samping Indomaret atau di Kantor, Lantai 5.">
+            </div>
+
+
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-search"></i> Cari Mekanik Terdekat Sekarang!
+            </button>
+        </form>
+
+        <p class="back-link"><a href="index.html"><i class="fas fa-arrow-left"></i> Kembali ke Halaman Utama</a></p>
+    </div>
+
+</body>
+</html>
