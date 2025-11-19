@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tentang Kami - Mechajob</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* --- GAYA DASAR --- */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7; /* Latar belakang abu-abu muda */
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header/Navigasi (SAMA DENGAN HALAMAN UTAMA) --- */
+        .header {
+            background-color: #2a6ed4;
+            box-shadow: 0 5px 0 0 orangered inset;
+            padding: 10px 20px; 
+            display: flex;
+            justify-content: space-between ; 
+            align-items: center;
+            position: relative; 
+            height: 120px; 
+        }
+
+        /* LOGO STYLING */
+        .header h1 { display: none; }
+        .header .logo-link {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            position: absolute;
+            left: 50%;
+            top: 50%; 
+            transform: translate(-50%, -50%); 
+            z-index: 20; 
+        }
+        
+        .header .logo {
+            height: 80px; 
+            width: auto; 
+            vertical-align: middle;
+        }
+        
+        .menu-icon {
+            font-size: 30px;
+            color: white; 
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 30; 
+        }
+        
+        /* --- Dropdown Menu --- */
+        .dropdown-menu {
+            display: none; 
+            position: absolute;
+            top: 100%; 
+            right: 0;
+            background-color: #ffffff;
+            min-width: 180px;
+            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+            z-index: 40; 
+        }
+        
+        .dropdown-menu.active { display: block; }
+        .menu-item {
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block; 
+            color: #333;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.3s; 
+            font-size: 14px;
+        }
+        .menu-item.login-register {
+            background-color: #ff9800; 
+            color: white;
+            font-weight: bold;
+        }
+        .menu-item:hover { background-color: #f1f1f1; }
+        
+        /* --- Konten Utama --- */
+        .main-content {
+            padding: 40px 20px 60px 20px; 
+            flex-grow: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .title-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-size: 36px; 
+            font-weight: 900;
+            color: #2a6ed4;
+            margin-bottom: 10px;
+        }
+        
+        .intro-text {
+            font-size: 18px; 
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        /* --- Bagian Visi, Misi, Nilai --- */
+        .section-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .section-box h3 {
+            font-size: 24px;
+            color: orangered;
+            border-bottom: 3px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .section-box p, .section-box ul {
+            font-size: 16px;
+            line-height: 1.7;
+            color: #444;
+        }
+        
+        .section-box ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .section-box ul li {
+            margin-bottom: 15px;
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .section-box ul li i {
+            color: #2a6ed4;
+            position: absolute;
+            left: 0;
+            top: 5px;
+            font-size: 18px;
+        }
+        
+        /* --- Footer (SAMA DENGAN HALAMAN UTAMA) --- */
+        .footer {
+            background-color: #333;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 5px solid orangered;
+        }
+
+        .footer-content { max-width: 900px; margin: 0 auto; }
+        .footer h3 { font-size: 18px; margin-top: 0; margin-bottom: 15px; color: #ff9800; }
+        .footer p { font-size: 14px; margin-bottom: 5px; line-height: 1.5; }
+
+        .social-links a {
+            color: white;
+            margin: 0 10px;
+            font-size: 24px;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .social-links a:hover { color: #2a6ed4; }
+        
+        .thank-you {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #555;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header { height: 100px; }
+            .header .logo { height: 150px; }
+            .page-title { font-size: 28px; }
+            .intro-text { font-size: 16px; }
+            .section-box { padding: 20px; }
+            .section-box h3 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        
+        <a href="halaman utama.html" class="logo-link">
+            <img src="logo.png" alt="Logo Mechajob" class="logo">
+        </a>
+        <div class="menu-icon">&#9776;</div> 
+        
+        <div class="dropdown-menu">
+            <a href="index.html" class="menu-item">Beranda</a>
+            <a href="registrasi.html" class="menu-item">Register</a>
+            <a href="Aduan.html" class="menu-item">Kontak Pengaduan</a>
+            <a href="login.html" class="menu-item login-register">Login</a> 
+        </div>
+
+    </div>
+
+    
+    <div class="main-content">
+        
+        <div class="title-section">
+            <h1 class="page-title">
+                <i class="fas fa-handshake" style="margin-right: 10px;"></i> TENTANG MECHAJOB
+            </h1>
+            
+            <p class="intro-text">
+                **Mechajob** adalah platform digital yang didirikan dengan satu tujuan utama: menjembatani kebutuhan pemilik kendaraan dengan mekanik profesional yang dapat diandalkan, secara cepat dan transparan. Kami percaya bahwa perbaikan kendaraan harus mudah, aman, dan dapat diakses kapan saja, di mana saja.
+            </p>
+        </div>
+        
+        <div class="section-box">
+            <h3><i class="fas fa-eye"></i> Visi Kami :</h3>
+            <p>
+                Menjadi platform layanan mekanik *on-demand* terkemuka di Indonesia yang memberdayakan mekanik lokal dan memberikan pengalaman perbaikan kendaraan terbaik bagi setiap pelanggan.
+            </p>
+        </div>
+
+        <div class="section-box">
+            <h3><i class="fas fa-bullseye"></i> Misi Kami :</h3>
+            <ul>
+                <li><i class="fas fa-star"></i> Menyediakan akses cepat kepada pelanggan untuk menemukan dan memesan jasa mekanik yang terverifikasi dan berkualitas.</li>
+                <li><i class="fas fa-tools"></i> Memberdayakan komunitas mekanik dengan menyediakan platform yang transparan, alat kerja, dan peluang penghasilan yang adil.</li>
+                <li><i class="fas fa-shield-alt"></i> Menjamin standar keamanan dan kualitas layanan yang tinggi dalam setiap transaksi.</li>
+                <li><i class="fas fa-map-marker-alt"></i> Memastikan layanan perbaikan tersedia di seluruh wilayah, baik untuk perawatan rutin maupun kondisi darurat.</li>
+            </ul>
+        </div>
+
+        <div class="section-box">
+            <h3><i class="fas fa-gem"></i> Nilai-Nilai Inti Kami :</h3>
+            <ul>
+                <li><i class="fas fa-check-circle"></i> **Integritas:** Kami beroperasi dengan kejujuran, memastikan harga yang transparan dan kualitas layanan yang dijanjikan.</li>
+                <li><i class="fas fa-bolt"></i> **Kecepatan:** Kami memprioritaskan respon cepat, terutama dalam situasi darurat di jalan.</li>
+                <li><i class="fas fa-user-friends"></i> **Kemitraan:** Kami menghargai mekanik kami sebagai mitra profesional dan memberikan dukungan penuh.</li>
+                <li><i class="fas fa-heart"></i> **Kepuasan Pelanggan:** Kami berkomitmen untuk melampaui harapan pelanggan dalam setiap layanan.</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <h3>Hubungi Kami</h3>
+            <p>Email: Mechajob2@Gmail.com</p>
+            <p>Telepon (WhatsApp): (+62) 81543025933</p>
+            <p>Alamat Kantor: online </p>
+            <br>
+            <div class="social-links">
+                
+                <a href="www.facebook.com" title="Facebook"><i class="fab fa-facebook-f"></i></a> 
+                <a href="@Mechajob" title="Instagram"><i class="fab fa-instagram"></i></a> 
+                <a href="Mechajob" title="Twitter"><i class="fab fa-twitter"></i></a> 
+            </div>
+
+            <div class="thank-you">
+                Terima kasih telah memilih **Mechajob** untuk kebutuhan perbaikan kendaraan Anda.
+                <br>
+                &copy; 2025 Mechajob. Hak Cipta Dilindungi.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Logika Menu Dropdown
+        const menuIcon = document.querySelector('.menu-icon');
+        const dropdownMenu = document.querySelector('.dropdown-menu');
+        
+        menuIcon.addEventListener('click', function(event) {
+            event.stopPropagation(); 
+            dropdownMenu.classList.toggle('active');
+        });
+
+        document.addEventListener('click', function(event) {
+            const isClickInsideMenu = dropdownMenu.contains(event.target);
+            const isClickOnIcon = menuIcon.contains(event.target);
+
+            if (!isClickInsideMenu && !isClickOnIcon) {
+                dropdownMenu.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
