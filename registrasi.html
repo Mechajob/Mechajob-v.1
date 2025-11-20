@@ -7,7 +7,7 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* --- GAYA DASAR --- */
+        /* --- GAYA DASAR (Sama seperti sebelumnya) --- */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -221,7 +221,7 @@
             <h2><i class="fas fa-user-plus"></i> Registrasi Mekanik</h2>
             
             <div class="info-box">
-                **Nama Bengkel** Anda akan otomatis dibuat: "Bengkel [Nama Lengkap Anda]".
+                **Nama Bengkel** akan otomatis dibuat: "Bengkel [Nama Lengkap Anda]". Anda dapat mengubahnya nanti di Dashboard.
             </div>
 
             <form id="registerForm">
@@ -231,6 +231,10 @@
 
                 <input type="email" id="emailReg" placeholder="Email (Digunakan untuk Login)" required>
                 <input type="password" id="passReg" placeholder="Kata Sandi (Min. 6 Karakter)" required minlength="6">
+                
+                <input type="text" id="shopAddressReg" placeholder="Alamat Lengkap Bengkel Anda" required>
+                
+                <input type="tel" id="shopWAReg" placeholder="Nomor WhatsApp (Contoh: 081234567890)" required>
                 
                 <button type="submit" id="btnReg">Daftar Sekarang</button>
             </form>
@@ -270,7 +274,6 @@
         // =========================================================
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-        // Import Firestore untuk menyimpan data tambahan (Nama Bengkel)
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"; 
 
         const firebaseConfig = {
@@ -285,7 +288,7 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app); // Inisialisasi Firestore
+        const db = getFirestore(app); 
 
         
         // =========================================================
@@ -295,10 +298,8 @@
         const shopNameHiddenInput = document.getElementById('shopNameReg');
 
         function autoFillShopName() {
-            // Mengambil nilai Nama Lengkap dan menghilangkan spasi ekstra
             let namaLengkap = namaInput.value.trim();
             
-            // Format Nama Bengkel: "Bengkel [Nama Lengkap]"
             if (namaLengkap) {
                 shopNameHiddenInput.value = `Bengkel ${namaLengkap}`;
             } else {
@@ -323,7 +324,11 @@
             const password = document.getElementById("passReg").value;
             const fullName = document.getElementById("namaReg").value;
             const shopName = shopNameHiddenInput.value; 
-
+            
+            // Ambil Nilai Input BARU
+            const shopAddress = document.getElementById("shopAddressReg").value; 
+            const shopWA = document.getElementById("shopWAReg").value; 
+            
             if (shopName.length < 5) {
                 alert("Nama Bengkel tidak valid. Pastikan Anda mengisi Nama Lengkap.");
                 return;
@@ -334,11 +339,13 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // 2. Simpan Data Tambahan (Nama Bengkel) ke Firestore
+                // 2. Simpan Data Tambahan ke Firestore
                 await setDoc(doc(db, "mekanik_users", user.uid), {
                     fullName: fullName,
                     email: email,
-                    shopName: shopName, // Nama Bengkel otomatis
+                    shopName: shopName,          // Nama Bengkel otomatis
+                    shopAddress: shopAddress,    // Data Baru
+                    shopWA: shopWA,              // Data Baru
                     role: "mekanik", 
                     isPro: false,
                     registrationDate: new Date()
