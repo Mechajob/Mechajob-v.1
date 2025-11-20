@@ -206,8 +206,9 @@ import {
     query, 
     where, 
     onSnapshot,
-    setDoc, // Ditambahkan untuk membuat profil default
-    serverTimestamp 
+    setDoc, 
+    serverTimestamp,
+    runTransaction // PENTING: Impor untuk keamanan claimOrder
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; 
 
 const firebaseConfig = {
@@ -231,7 +232,6 @@ let currentUserEmail = null;
 // 2. STATE APLIKASI
 // =========================================================
 const STATE = {
-  // Ditambahkan 'rating'
   shop: { name: "Memuat...", address: "Memuat...", wa: "Memuat...", isPro: false, limit: 10, rating: 0 }, 
   customers: [], // Pesanan Baru Tersedia (status: pending)
   myOrders: [],  // Orderan Saya (mekanikId: currentUserId)
@@ -260,7 +260,7 @@ function render(){
   document.getElementById("shopWA").textContent = STATE.shop.wa;
   document.getElementById("shopStatusContainer").innerHTML = `<span class="status ${shopStatusClass}">${shopStatusText}</span>`;
   
-  // RENDER RATING (Tambahan dari versi kedua)
+  // RENDER RATING
   const ratingDisplay = document.getElementById("shopRating");
   if (STATE.shop.rating && STATE.shop.rating > 0) {
       const fullStars = Math.floor(STATE.shop.rating);
@@ -290,7 +290,7 @@ function render(){
   
   document.getElementById("orderLimitInfo").textContent = STATE.shop.isPro 
     ? 'Batas Akun PRO: Tidak ada batasan jumlah order aktif.'
-    : `Batas Akun Standar: Ambil maks. ${STATE.shop.limit} order aktif. (Aktif: ${currentOrdersInProgress}/${STATE.shop.limit})`; // Tampilkan Order Aktif
+    : `Batas Akun Standar: Ambil maks. ${STATE.shop.limit} order aktif. (Aktif: ${currentOrdersInProgress}/${STATE.shop.limit})`; 
 
   // 3d. Render Pesanan Baru (customers)
   const ctbody=document.getElementById("tblCustomers");
@@ -359,7 +359,7 @@ async function fetchAndRenderProfile(uid, email) {
                 wa: data.shopWA || "WA Belum Disetel",
                 isPro: data.isPro || false,
                 limit: data.isPro ? 999 : 10,
-                rating: data.rating || 0 // Tambahkan rating
+                rating: data.rating || 0 
             };
         } else {
             // KASUS 2: Dokumen TIDAK ADA, buat dokumen baru (Autofill)
@@ -370,7 +370,7 @@ async function fetchAndRenderProfile(uid, email) {
                 shopAddress: "Alamat belum diatur",
                 shopWA: "08XX-XXXX-XXXX",
                 isPro: false,
-                rating: 0, // Default rating
+                rating: 0, 
                 email: email,
                 createdAt: serverTimestamp() 
             };
@@ -389,8 +389,6 @@ async function fetchAndRenderProfile(uid, email) {
             alert(`Selamat datang! Profil dasar Anda telah dibuat di Firestore.`);
         }
         
-        // Final render: Tampilkan alamat yang lengkap (tanpa pemotongan paksa)
-        // Jika terlalu panjang, CSS akan memotong, tapi data tetap lengkap di memori.
         render();
 
     } catch (error) {
@@ -408,7 +406,6 @@ function setupRealtimeNewOrderListener() {
             const data = doc.data();
             return {
                 id: doc.id, 
-                // Pastikan nama field ini sesuai dengan data Firestore Anda
                 name: data.custName,
                 vehicle: data.vehicle || `${data.vehicleType} ${data.vehicleModel}`,
                 issue: data.issueType || data.issueDesc, 
@@ -448,17 +445,11 @@ function setupRealtimeMyOrderListener(uid) {
 // 5. FUNGSI LOGIKA (Update Firestore)
 // =========================================================
 
-import { 
-    // Tambahkan impor Transaksi di sini
-    runTransaction,
-    // ... (impor lainnya)
-} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; 
-
 window.claimOrder = async function(id){
     const currentOrdersInProgress = STATE.myOrders.filter(o => o.status === 'in-progress').length;
     const orderRef = doc(db, "new_orders", id);
 
-    // Batasan Akun STANDAR (Tetap sama)
+    // Batasan Akun STANDAR
     if(!STATE.shop.isPro && currentOrdersInProgress >= STATE.shop.limit){
         alert(`Batas ${STATE.shop.limit} order aktif tercapai. Upgrade ke PRO untuk batas lebih tinggi.`);
         return;
@@ -469,8 +460,8 @@ window.claimOrder = async function(id){
     }
 
     try {
+        // MENGGUNAKAN TRANSAKSI UNTUK MENCEGAH RACE CONDITION
         await runTransaction(db, async (transaction) => {
-            // 1. Baca dokumen saat ini di dalam Transaksi
             const orderDoc = await transaction.get(orderRef);
 
             if (!orderDoc.exists()) {
@@ -479,13 +470,12 @@ window.claimOrder = async function(id){
 
             const currentStatus = orderDoc.data().status;
 
-            // 2. Cek apakah status masih 'pending' (Pencegahan Race Condition)
+            // Cek apakah status masih 'pending'
             if (currentStatus !== "pending") {
-                // Jika sudah diambil oleh orang lain, batalkan Transaksi
                 throw "Order ini sudah diambil oleh mekanik lain atau sudah diproses."; 
             }
 
-            // 3. Jika status masih 'pending', Lakukan update (Tulis ke database)
+            // Lakukan update
             transaction.update(orderRef, {
                 status: "in-progress",
                 mekanikId: currentUserId,
@@ -501,7 +491,6 @@ window.claimOrder = async function(id){
         
         let userMessage = "Terjadi kesalahan saat mengambil pesanan. Coba lagi.";
         
-        // Tampilkan pesan kesalahan spesifik jika ada
         if (typeof error === 'string') {
             userMessage = error;
         } else if (error.code && error.code === 'permission-denied') {
@@ -511,6 +500,62 @@ window.claimOrder = async function(id){
         alert(`Gagal mengambil pesanan: ${userMessage}`);
     }
 }
+
+
+window.finishOrder = async function(id) {
+    const totalCostStr = prompt("Masukkan total biaya service (hanya angka):");
+    if (totalCostStr === null) return; 
+
+    const totalCost = parseInt(totalCostStr);
+
+    if (isNaN(totalCost) || totalCost <= 0) {
+        return alert("Input biaya tidak valid. Harus berupa angka positif.");
+    }
+    
+    if (!confirm(`Yakin ingin menandai pesanan ${id.substring(0, 6)} selesai dengan biaya Rp ${formatCurrency(totalCost)}?`)) {
+        return;
+    }
+    
+    try {
+        const orderRef = doc(db, "new_orders", id);
+        await updateDoc(orderRef, {
+            status: "selesai",
+            total: totalCost, 
+            finishTime: serverTimestamp()
+        });
+        alert("Pesanan berhasil diselesaikan!");
+    } catch (error) {
+        console.error("Gagal menyelesaikan pesanan:", error);
+        alert("Terjadi kesalahan saat menyelesaikan pesanan. Coba lagi.");
+    }
+}
+
+window.editProfile = async function(){
+    if (!STATE.shop.isPro) {
+        alert("Fitur Edit Profil hanya tersedia untuk akun PRO. Silakan hubungi admin untuk upgrade.");
+        return;
+    }
+    
+    const newName = prompt(`Masukkan Nama Bengkel baru (saat ini: ${STATE.shop.name}):`, STATE.shop.name);
+    if (!newName) return; 
+    
+    const newWA = prompt(`Masukkan Nomor WA baru (saat ini: ${STATE.shop.wa}):`, STATE.shop.wa);
+    if (!newWA) return; 
+
+    try {
+        const profileRef = doc(db, "mekanik_users", currentUserId);
+        await updateDoc(profileRef, {
+            shopName: newName,
+            shopWA: newWA,
+        });
+        alert("Profil berhasil diperbarui!");
+        await fetchAndRenderProfile(currentUserId, currentUserEmail); 
+    } catch (error) {
+        console.error("Gagal memperbarui profil:", error);
+        alert("Gagal memperbarui profil. Coba lagi.");
+    }
+}
+
 // =========================================================
 // 6. LOGIKA AUTENTIKASI FIREBASE & EVENT LISTENERS
 // =========================================================
@@ -521,7 +566,6 @@ onAuthStateChanged(auth, async (user) => {
         currentUserEmail = user.email; 
         
         // 1. Ambil dan tampilkan profil bengkel
-        // Perbaiki: Pastikan fetchAndRenderProfile dipanggil dengan email untuk logika autofill.
         await fetchAndRenderProfile(currentUserId, currentUserEmail); 
         
         // 2. Mulai mendengarkan pesanan baru (Realtime)
@@ -532,14 +576,14 @@ onAuthStateChanged(auth, async (user) => {
         
     } else {
         console.log("Tidak ada pengguna yang login.");
-        window.location.href = "login mekanik.html"; 
+        window.location.href = "login-mekanik.html"; // Pastikan redirect ke nama file login yang baru/benar
     }
 });
 
 // Implementasi Logout Firebase (untuk kedua tombol)
 const handleLogout = () => {
     signOut(auth).then(() => {
-        window.location.href = "login mekanik.html"; 
+        window.location.href = "login-mekanik.html"; 
     }).catch((error) => {
         console.error("Logout error:", error);
         alert("Gagal logout. Coba lagi.");
