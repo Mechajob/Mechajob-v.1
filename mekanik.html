@@ -205,6 +205,436 @@ import {
     query, 
     where, 
     onSnapshot,
+    // Diperlukan untuk membuat profil otomatis
+    setDoc,
+    serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; 
+
+const firebaseConfig = {
+    apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
+    authDomain: "mechajob-b7360.firebaseapp.com",
+    projectId: "mechajob-b7360",
+    storageBucket: "mechajob-b7360.firebasestorage.app",
+    messagingSenderId: "753002885541",
+    appId: "1:753002885541:web:96e4964dbd300193ff384c",
+    measurementId: "G-ZY3RS8WGP7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUserId = null;
+let currentUserEmail = null; 
+
+// =========================================================
+// 2. STATE APLIKASI
+// =========================================================
+const STATE = {
+  shop: { name: "Memuat...", address: "Memuat...", wa: "Memuat...", isPro: false, limit: 10 },
+  customers: [], // Pesanan Baru Tersedia (status: pending)
+  myOrders: [],  // Orderan Saya (mekanikId: currentUserId)
+};
+
+// =========================================================
+// 3. FUNGSI RENDER UTAMA
+// =========================================================
+function formatCurrency(number) {
+    if (number === 0 || number === undefined) return '0';
+    // Gunakan toLocaleString untuk format Indonesia
+    return number.toLocaleString('id-ID');
+}
+
+function render(){
+  
+  // 3a. Update Header Info
+  const shopStatusText = STATE.shop.isPro ? 'PRO' : 'STANDAR';
+  const shopStatusClass = STATE.shop.isPro ? 'pro' : 'wait';
+  
+  document.getElementById('headerInfo').innerHTML = `<i class="fas fa-user-circle"></i> ${currentUserEmail || 'Memuat...'} • Akun ${shopStatusText}`;
+  
+  // 3b. Update Profil & Status
+  document.getElementById("shopName").textContent = STATE.shop.name;
+  document.getElementById("shopAddr").textContent = STATE.shop.address;
+  document.getElementById("shopWA").textContent = STATE.shop.wa;
+  document.getElementById("shopStatusContainer").innerHTML = `<span class="status ${shopStatusClass}">${shopStatusText}</span>`;
+  
+  
+  // 3c. Update Ringkasan Stat
+  const currentOrdersInProgress = STATE.myOrders.filter(o => o.status === 'in-progress').length;
+  const totalRevenue = STATE.myOrders
+    .filter(o => o.status === 'selesai' && o.total)
+    .reduce((sum, o) => sum + o.total, 0);
+    
+  document.getElementById("statWaiting").textContent = STATE.customers.length;
+  document.getElementById("statTaken").textContent = currentOrdersInProgress; 
+  document.getElementById("statRevenue").textContent = `Rp ${formatCurrency(totalRevenue)}`;
+  
+  document.getElementById("orderLimitInfo").textContent = STATE.shop.isPro 
+    ? 'Batas Akun PRO: Tidak ada batasan jumlah order aktif.'
+    : `Batas Akun Standar: Ambil maks. ${STATE.shop.limit} order aktif.`;
+
+  // 3d. Render Pesanan Baru (customers)
+  const ctbody=document.getElementById("tblCustomers");
+  ctbody.innerHTML="";
+  if (STATE.customers.length === 0) {
+      ctbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Tidak ada pesanan baru saat ini.</td></tr>';
+  } else {
+      STATE.customers.forEach(c=>{
+          const tr=document.createElement("tr");
+          tr.innerHTML=`
+          <td>${c.id.substring(0, 6)}...</td><td>${c.name}</td><td>${c.vehicle}</td><td>${c.issue}</td><td>${c.location}</td>
+          <td><button class="mini" onclick="window.claimOrder('${c.id}')">Ambil</button></td>`;
+          ctbody.appendChild(tr);
+      });
+  }
+  
+  // 3e. Render Orderan Saya (myOrders)
+  const otbody=document.getElementById("tblOrders");
+  otbody.innerHTML="";
+  if (STATE.myOrders.length === 0) {
+      otbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Anda belum mengambil orderan.</td></tr>';
+  } else {
+      STATE.myOrders.forEach(o=>{
+          const statusClass = o.status.toLowerCase().replace('-', ''); 
+          let statusText = o.status.charAt(0).toUpperCase() + o.status.slice(1).replace('-', ' ');
+          const totalDisplay = o.status === 'selesai' ? `Rp ${formatCurrency(o.total)}` : 'Belum selesai';
+          
+          const actionButton = o.status === 'in-progress' 
+                               ? `<button class="mini mini-finish" onclick="window.finishOrder('${o.id}')">Selesaikan</button>`
+                               : `<button class="btn-ghost" disabled>Selesai</button>`;
+
+          const tr=document.createElement("tr");
+          tr.innerHTML=`
+          <td>${o.id.substring(0, 6)}...</td>
+          <td>${o.cust}</td>
+          <td>${o.service}</td>
+          <td><span class="status ${statusClass}">${statusText}</span></td>
+          <td>${totalDisplay}</td>
+          <td>${actionButton}</td>`;
+          otbody.appendChild(tr);
+      });
+  }
+  
+  // 3f. Kontrol Fitur PRO (Locked Overlay)
+  const lockOverlay = document.getElementById('sparepartLock');
+  if (lockOverlay) {
+      lockOverlay.style.display = STATE.shop.isPro ? 'none' : 'flex';
+  }
+}
+
+// =========================================================
+// 4. LOGIKA FIREBASE LISTENERS & FETCH
+// =========================================================
+
+async function fetchAndRenderProfile(uid, email) {
+    try {
+        const docRef = doc(db, "mekanik_users", uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            // KASUS 1: Dokumen sudah ada, ambil datanya
+            const data = docSnap.data();
+            STATE.shop = {
+                name: data.shopName || "Nama Bengkel Belum Disetel",
+                address: data.shopAddress || "Alamat Belum Disetel",
+                wa: data.shopWA || "WA Belum Disetel",
+                isPro: data.isPro || false,
+                limit: data.isPro ? 999 : 10
+            };
+        } else {
+            // KASUS 2: Dokumen TIDAK ADA, buat dokumen baru (Autofill)
+            console.log("Dokumen mekanik baru tidak ditemukan. Membuat profil default.");
+            
+            const defaultProfile = {
+                shopName: `Bengkel ${email.split('@')[0]}`, 
+                shopAddress: "Alamat belum diatur",
+                shopWA: "08XX-XXXX-XXXX",
+                isPro: false,
+                email: email,
+                createdAt: serverTimestamp() 
+            };
+            
+            await setDoc(docRef, defaultProfile);
+            
+            STATE.shop = {
+                name: defaultProfile.shopName,
+                address: defaultProfile.shopAddress,
+                wa: defaultProfile.shopWA,
+                isPro: defaultProfile.isPro,
+                limit: 10
+            };
+            
+            alert(`Selamat datang! Profil dasar Anda telah dibuat di Firestore.`);
+        }
+        
+        // Final render: Gunakan versi singkat alamat untuk kartu profil
+        const displayAddress = STATE.shop.address.length > 35 
+            ? STATE.shop.address.substring(0, 35) + '...' 
+            : STATE.shop.address;
+            
+        STATE.shop.address = displayAddress;
+        render();
+
+    } catch (error) {
+        console.error("Gagal memuat atau membuat profil:", error);
+    }
+}
+
+// Mendengarkan Pesanan BARU (status: pending) secara Realtime
+function setupRealtimeNewOrderListener() {
+    const ordersRef = collection(db, "new_orders");
+    const q = query(ordersRef, where("status", "==", "pending"));
+
+    onSnapshot(q, (snapshot) => {
+        STATE.customers = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id, 
+                name: data.custName,
+                vehicle: data.vehicle || `${data.vehicleType} ${data.vehicleModel}`,
+                issue: data.issueType || data.issueDesc, 
+                location: data.custLocation,
+            };
+        });
+        render(); 
+    }, (error) => {
+        console.error("Gagal mendengarkan pesanan baru:", error);
+    });
+}
+
+// Mendengarkan Orderan SAYA (mekanikId: currentUserId) secara Realtime
+function setupRealtimeMyOrderListener(uid) {
+    const ordersRef = collection(db, "new_orders");
+    const q = query(ordersRef, where("mekanikId", "==", uid));
+
+    onSnapshot(q, (snapshot) => {
+        STATE.myOrders = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id, 
+                cust: data.custName,
+                service: data.issueType || data.issueDesc,
+                status: data.status,
+                total: data.total || 0 
+            };
+        });
+        render(); 
+    }, (error) => {
+        console.error("Gagal mendengarkan orderan saya:", error);
+    });
+}
+
+// =========================================================
+// 5. FUNGSI LOGIKA (Update Firestore)
+// =========================================================
+
+window.claimOrder = async function(id){
+  const currentOrdersInProgress = STATE.myOrders.filter(o => o.status === 'in-progress').length;
+  
+  // Batasan Akun STANDAR
+  if(!STATE.shop.isPro && currentOrdersInProgress >= STATE.shop.limit){
+    alert(`Batas ${STATE.shop.limit} order aktif tercapai. Upgrade ke PRO untuk batas lebih tinggi.`);
+    return;
+  }
+  
+  if (!confirm(`Yakin ingin mengambil pesanan ID ${id.substring(0, 6)}?`)) {
+    return;
+  }
+
+  try {
+      const orderRef = doc(db, "new_orders", id);
+      await updateDoc(orderRef, {
+          status: "in-progress",
+          mekanikId: currentUserId,
+          mekanikName: STATE.shop.name, 
+          claimTime: new Date()
+      });
+      alert(`Pesanan ${id.substring(0, 6)} berhasil Anda ambil!`);
+  } catch (error) {
+      console.error("Gagal mengambil pesanan:", error);
+      alert("Terjadi kesalahan saat mengambil pesanan. Coba lagi.");
+  }
+}
+
+window.finishOrder = async function(id) {
+    const totalCostStr = prompt("Masukkan total biaya service (hanya angka):");
+    if (totalCostStr === null) return; 
+
+    const totalCost = parseInt(totalCostStr);
+
+    if (isNaN(totalCost) || totalCost <= 0) {
+        return alert("Input biaya tidak valid. Harus berupa angka positif.");
+    }
+    
+    if (!confirm(`Yakin ingin menandai pesanan ${id.substring(0, 6)} selesai dengan biaya Rp ${formatCurrency(totalCost)}?`)) {
+        return;
+    }
+    
+    try {
+        const orderRef = doc(db, "new_orders", id);
+        await updateDoc(orderRef, {
+            status: "selesai",
+            total: totalCost, 
+            finishTime: new Date()
+        });
+        alert("Pesanan berhasil diselesaikan!");
+    } catch (error) {
+        console.error("Gagal menyelesaikan pesanan:", error);
+        alert("Terjadi kesalahan saat menyelesaikan pesanan. Coba lagi.");
+    }
+}
+
+window.editProfile = async function(){
+    if (!STATE.shop.isPro) {
+        alert("Fitur Edit Profil hanya tersedia untuk akun PRO. Silakan hubungi admin untuk upgrade.");
+        return;
+    }
+    
+    // Asumsi data alamat lengkap tersimpan di Firestore, meskipun di STATE.shop.address hanya versi singkat
+    const currentProfile = await getDoc(doc(db, "mekanik_users", currentUserId));
+    const currentAddress = currentProfile.data()?.shopAddress || "Alamat belum diatur";
+    
+    const newName = prompt(`Masukkan Nama Bengkel baru (saat ini: ${STATE.shop.name}):`, STATE.shop.name);
+    if (!newName) return; 
+    
+    const newWA = prompt(`Masukkan Nomor WA baru (saat ini: ${STATE.shop.wa}):`, STATE.shop.wa);
+    if (!newWA) return; 
+    
+    const newAddress = prompt(`Masukkan Alamat Bengkel lengkap (saat ini: ${currentAddress}):`, currentAddress);
+    if (!newAddress) return; 
+
+    try {
+        const profileRef = doc(db, "mekanik_users", currentUserId);
+        await updateDoc(profileRef, {
+            shopName: newName,
+            shopWA: newWA,
+            shopAddres  .locked-overlay{
+    position:absolute;inset:0;background:rgba(255,255,255,0.9);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    border-radius:10px;text-align:center;backdrop-filter:blur(3px);
+  }
+  .locked-overlay .lock-icon {
+      font-size: 40px;
+      color: var(--muted);
+      margin-bottom: 10px;
+  }
+  .profile-actions{
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+  
+  /* --- 8. RESPONSIVE --- */
+  @media(max-width:980px){
+    .grid{grid-template-columns:1fr; gap: 15px;}
+    .wrap {padding: 10px;}
+    header h1 { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1><i class="fas fa-tachometer-alt"></i> Mechajob — Dashboard Bengkel</h1>
+      <div class="muted" id="headerInfo">Memuat status akun...</div> 
+    </div>
+    <button class="btn-ghost" id="btnLogoutHeader">🚪 Logout</button>
+  </header>
+
+  <div class="grid">
+    <aside>
+      <div class="card">
+        <div style="display:flex;gap:15px;align-items:center">
+          <div class="profile-logo"><i class="fas fa-tools"></i></div>
+          <div>
+            <div style="font-weight:800; font-size: 16px;" id="shopName">Memuat Nama Bengkel...</div>
+            <div class="muted" id="shopAddr">Memuat Alamat...</div>
+            <div style="margin-top:6px" class="muted"><i class="fab fa-whatsapp"></i> WA: <span id="shopWA">Memuat...</span></div>
+            <div style="margin-top:8px" id="shopStatusContainer"><span class="status wait">STANDAR</span></div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px" class="section-title">
+          <strong><i class="fas fa-chart-bar"></i> Ringkasan Kinerja</strong>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><div class="num" id="statWaiting">0</div><div class="muted">Pesanan Baru</div></div>
+          <div class="stat"><div class="num" id="statTaken">0</div><div class="muted">Order Aktif</div></div>
+          <div class="stat"><div class="num" id="statRevenue">Rp 0</div><div class="muted">Omzet Selesai</div></div>
+        </div>
+        
+        <div class="profile-actions">
+            <button class="btn-ghost" id="btnEditProfile"><i class="fas fa-cog"></i> Edit Profil</button>
+            <button class="btn-pro" id="btnUpgrade"><i class="fas fa-crown"></i> Upgrade ke PRO</button>
+            <button class="btn-danger" id="btnLogoutFooter"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="card">
+        <div class="section-title">
+          <strong><i class="fas fa-car-side"></i> Pesanan Baru Tersedia</strong>
+          <div class="muted" id="orderLimitInfo">Memuat batas order...</div>
+        </div>
+        <table class="table">
+          <thead><tr><th>ID</th><th>Nama</th><th>Kendaraan</th><th>Keluhan</th><th>Lokasi</th><th>Aksi</th></tr></thead>
+          <tbody id="tblCustomers">
+            <tr><td colspan="6">Memuat pesanan baru dari server...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" style="min-height: 180px;">
+        <div class="section-title">
+          <strong><i class="fas fa-cogs"></i> Sparepart Dicari Pelanggan</strong>
+        </div>
+        <div class="locked-overlay" id="sparepartLock">
+          <div class="lock-icon"><i class="fas fa-lock"></i></div>
+          <div>🔒 Fitur ini **terkunci**<br><small>Upgrade ke PRO untuk mengakses pencarian sparepart pelanggan</small></div>
+          <button class="btn-upgrade" style="margin-top:15px" id="btnUpgrade2"><i class="fas fa-bolt"></i> Upgrade ke PRO Sekarang</button>
+        </div>
+        <div id="sparepartContent">
+          </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title"><strong><i class="fas fa-receipt"></i> Orderan Saya</strong></div>
+        <table class="table">
+          <thead><tr><th>ID</th><th>Pelanggan</th><th>Layanan</th><th>Status</th><th>Total</th><th>Aksi</th></tr></thead>
+          <tbody id="tblOrders">
+             <tr><td colspan="6">Memuat orderan aktif...</td></tr>
+        </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script type="module">
+// =========================================================
+// 1. KONFIGURASI DAN IMPOR FIREBASE
+// =========================================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { 
+    getAuth, 
+    onAuthStateChanged, 
+    signOut 
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { 
+    getFirestore, 
+    doc, 
+    getDoc, 
+    updateDoc,
+    collection, 
+    query, 
+    where, 
+    onSnapshot,
     // TAMBAHKAN setDoc dan serverTimestamp
     setDoc,
     serverTimestamp 
