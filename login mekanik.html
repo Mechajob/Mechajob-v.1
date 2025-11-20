@@ -19,7 +19,7 @@
             flex-direction: column;
         }
 
-        /* --- Header/Navigasi (SAMA DENGAN HALAMAN UTAMA) --- */
+        /* --- Header/Navigasi --- */
         .header {
             background-color: #2a6ed4; 
             box-shadow: 0 5px 0 0 orangered inset;
@@ -31,7 +31,7 @@
             height: 120px; 
         }
 
-        /* LOGO STYLING */
+        /* LOGO STYLING (Asumsi Anda memiliki logo.png) */
         .header h1 { display: none; }
 
         .header .logo-link {
@@ -85,11 +85,6 @@
             transition: background-color 0.3s; 
             font-size: 14px;
         }
-        .menu-item.login-register {
-            background-color: #ff9800; 
-            color: white;
-            font-weight: bold;
-        }
         .menu-item:hover { background-color: #f1f1f1; }
         
         /* --- Konten Utama (Formulir Login) --- */
@@ -102,7 +97,6 @@
             padding: 40px 20px;
         }
         
-        /* --- GAYA FORMULIR (Diambil dari input Anda) --- */
         .form-box {
             background: #fff;
             padding: 30px;
@@ -152,7 +146,7 @@
             font-weight: bold;
         }
 
-        /* --- Footer (SAMA DENGAN HALAMAN UTAMA) --- */
+        /* --- Footer --- */
         .footer {
             background-color: #333;
             color: white;
@@ -248,7 +242,7 @@
     </footer>
 
     <script type="module">
-        // --- LOGIKA MENU DROPDOWN (SAMA DENGAN HALAMAN UTAMA) ---
+        // --- LOGIKA MENU DROPDOWN ---
         const menuIcon = document.querySelector('.menu-icon');
         const dropdownMenu = document.querySelector('.dropdown-menu');
         
@@ -267,7 +261,6 @@
         });
         
         // --- LOGIKA FIREBASE ---
-        // Menggunakan versi 10.13.0 agar konsisten dengan dashboard mekanik.
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js"; 
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
@@ -292,10 +285,9 @@
             try {
                 await signInWithEmailAndPassword(auth, email, password);
                 alert(`Login berhasil: ${email}`);
-                // REDIRECT DIPERBARUI ke nama file yang lebih sesuai
+                // Redirect ke dashboard mekanik
                 window.location.href = "dashboard-mekanik.html"; 
             } catch (error) {
-                // Menangani error dari Firebase
                 let errorMessage = "Login gagal. Periksa kembali email dan kata sandi Anda.";
                 if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
                     errorMessage = "Email atau Kata Sandi salah.";
