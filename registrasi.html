@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrasi Mekanik Baru - Mechajob</title>
+    <title>Registrasi Mekanik - Mechajob</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -12,16 +12,16 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f7f9; /* Latar belakang dari form login */
+            background-color: #f4f7f9; 
             color: #333;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* --- Header/Navigasi (SAMA DENGAN HALAMAN UTAMA) --- */
+        /* --- Header/Navigasi --- */
         .header {
-            background-color: #2a6ed4; /* Biru gelap */
+            background-color: #2a6ed4; 
             box-shadow: 0 5px 0 0 orangered inset;
             padding: 10px 20px; 
             display: flex;
@@ -62,7 +62,7 @@
             z-index: 30; 
         }
         
-        /* --- Dropdown Menu (Menu Hamburger) --- */
+        /* --- Dropdown Menu --- */
         .dropdown-menu {
             display: none; 
             position: absolute;
@@ -102,7 +102,7 @@
             padding: 40px 20px;
         }
         
-        /* --- GAYA FORMULIR (Diambil dari Halaman Login) --- */
+        /* --- GAYA FORMULIR --- */
         .form-box {
             background: #fff;
             padding: 30px;
@@ -113,20 +113,20 @@
         }
         h2 {
             text-align: center;
-            color: #2a6ed4; /* Warna Biru Mechajob */
+            color: #ff9800;
             margin-bottom: 20px;
         }
-        input, select {
+        input {
             width: 100%;
             padding: 12px;
             margin: 10px 0;
             border-radius: 5px;
             border: 1px solid #ccc;
-            box-sizing: border-box; 
+            box-sizing: border-box;
             font-size: 16px;
         }
         button {
-            background: #ff9800; /* Warna Oranye Mechajob */
+            background: #2a6ed4;
             color: white;
             border: none;
             padding: 12px;
@@ -136,9 +136,10 @@
             font-weight: bold;
             cursor: pointer;
             transition: background 0.3s;
+            margin-top: 10px;
         }
         button:hover {
-            background: #f57c00;
+            background: #1e5ab3;
         }
         .form-box p {
             text-align: center;
@@ -146,20 +147,20 @@
             font-size: 14px;
         }
         .form-box a {
-            color: #2a6ed4;
+            color: #ff9800;
             text-decoration: none;
             font-weight: bold;
         }
-        label {
-            display: block;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-            font-size: 14px;
+        .info-box {
+            background-color: #fff3cd;
+            border-left: 5px solid #ff9800;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #856404;
         }
-
-        /* --- Footer (SAMA DENGAN HALAMAN UTAMA) --- */
+        
+        /* --- Footer --- */
         .footer {
             background-color: #333;
             color: white;
@@ -208,57 +209,36 @@
         
         <div class="dropdown-menu">
             <a href="index.html" class="menu-item">Beranda</a>
+            <a href="login mekanik.html" class="menu-item">Login</a>
             <a href="Aduan.html" class="menu-item">Kontak Pengaduan</a>
-            <a href="tentang.html" class="menu-item">Tentang Kami</a>
-            <a href="login mekanik.html" class="menu-item login-register">Login</a> 
+            <a href="tentang.html" class="menu-item">Tentang Kami</a>  
         </div>
 
     </div>
 
     <div class="main-content">
         <div class="form-box">
-            <h2><i class="fas fa-user-plus"></i> Daftar Sebagai Mekanik</h2>
+            <h2><i class="fas fa-user-plus"></i> Registrasi Mekanik</h2>
             
-            <form id="registrationForm">
-                
-                <label for="namaReg">Nama Lengkap</label>
-                <input type="text" id="namaReg" placeholder="Nama Lengkap Anda" required>
-                
-                <form id="registerForm">
-                <input type="text" id="namaReg" placeholder="Nama Lengkap" required>
-    
-    <input type="hidden" id="shopNameReg" name="shopName" value=""> 
-    
-    </form>
+            <div class="info-box">
+                **Nama Bengkel** Anda akan otomatis dibuat: "Bengkel [Nama Lengkap Anda]".
+            </div>
 
-                <label for="teleponReg">Nomor Telepon (WhatsApp)</label>
-                <input type="text" id="teleponReg" placeholder="Contoh: 081234567890" required>
+            <form id="registerForm">
+                <input type="text" id="namaReg" placeholder="Nama Lengkap Penanggung Jawab" required>
+                
+                <input type="hidden" id="shopNameReg" name="shopName" value=""> 
 
-                <label for="emailReg">Email</label>
-                <input type="email" id="emailReg" placeholder="Email Aktif Anda" required>
+                <input type="email" id="emailReg" placeholder="Email (Digunakan untuk Login)" required>
+                <input type="password" id="passReg" placeholder="Kata Sandi (Min. 6 Karakter)" required minlength="6">
                 
-                <label for="spesialisasiReg">Spesialisasi Kendaraan</label>
-                <select id="spesialisasiReg" required>
-                    <option value="">-- Pilih Spesialisasi --</option>
-                    <option value="Mobil">Mobil (Penumpang/Niaga)</option>
-                    <option value="Motor">Motor (Bebek/Sport/Matic)</option>
-                    <option value="Keduanya">Keduanya</option>
-                    <option value="Truk">Truk/Kendaraan Berat</option>
-                     <option value="Truk">Lainya</option>
-                </select>
-                
-                <label for="passReg">Kata Sandi</label>
-                <input type="password" id="passReg" placeholder="Buat Kata Sandi (min. 6 karakter)" required>
-                
-                <label for="confirmPassReg">Konfirmasi Kata Sandi</label>
-                <input type="password" id="confirmPassReg" placeholder="Ulangi Kata Sandi" required>
-                
-                <button type="submit" id="btnReg" style="margin-top: 25px;">Daftar Sekarang</button>
+                <button type="submit" id="btnReg">Daftar Sekarang</button>
             </form>
             
             <p>Sudah punya akun? <a href="login mekanik.html">Masuk di sini</a></p>
+            
             <p class="back-link"><a href="index.html">Kembali ke Halaman Utama</a></p>
-                    
+            
         </div>
     </div>
 
@@ -285,7 +265,105 @@
     </footer>
 
     <script type="module">
-        // --- LOGIKA MENU DROPDOWN (SAMA DENGAN HALAMAN UTAMA) ---
+        // =========================================================
+        // 1. KONFIGURASI DAN IMPOR FIREBASE
+        // =========================================================
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        // Import Firestore untuk menyimpan data tambahan (Nama Bengkel)
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"; 
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
+            authDomain: "mechajob-b7360.firebaseapp.com",
+            projectId: "mechajob-b7360",
+            storageBucket: "mechajob-b7360.firebasestorage.app",
+            messagingSenderId: "753002885541",
+            appId: "1:753002885541:web:96e4964dbd300193ff384c",
+            measurementId: "G-ZY3RS8WGP7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app); // Inisialisasi Firestore
+
+        
+        // =========================================================
+        // 2. LOGIKA OTOMATISASI NAMA BENGKEL
+        // =========================================================
+        const namaInput = document.getElementById('namaReg');
+        const shopNameHiddenInput = document.getElementById('shopNameReg');
+
+        function autoFillShopName() {
+            // Mengambil nilai Nama Lengkap dan menghilangkan spasi ekstra
+            let namaLengkap = namaInput.value.trim();
+            
+            // Format Nama Bengkel: "Bengkel [Nama Lengkap]"
+            if (namaLengkap) {
+                shopNameHiddenInput.value = `Bengkel ${namaLengkap}`;
+            } else {
+                shopNameHiddenInput.value = '';
+            }
+        }
+
+        // Tambahkan event listener saat pengguna mengetik
+        namaInput.addEventListener('input', autoFillShopName);
+        
+        
+        // =========================================================
+        // 3. LOGIKA REGISTRASI FIREBASE
+        // =========================================================
+        document.getElementById("registerForm").addEventListener("submit", async (e) => {
+            e.preventDefault(); 
+            
+            // Panggil autofill sekali lagi untuk memastikan nilai akhir
+            autoFillShopName(); 
+            
+            const email = document.getElementById("emailReg").value;
+            const password = document.getElementById("passReg").value;
+            const fullName = document.getElementById("namaReg").value;
+            const shopName = shopNameHiddenInput.value; 
+
+            if (shopName.length < 5) {
+                alert("Nama Bengkel tidak valid. Pastikan Anda mengisi Nama Lengkap.");
+                return;
+            }
+
+            try {
+                // 1. Buat Akun Autentikasi
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // 2. Simpan Data Tambahan (Nama Bengkel) ke Firestore
+                await setDoc(doc(db, "mekanik_users", user.uid), {
+                    fullName: fullName,
+                    email: email,
+                    shopName: shopName, // Nama Bengkel otomatis
+                    role: "mekanik", 
+                    isPro: false,
+                    registrationDate: new Date()
+                });
+
+                alert(`Registrasi berhasil! Selamat datang, ${shopName}.`);
+                // Redirect ke halaman dashboard setelah sukses
+                window.location.href = "dashboard.html"; 
+
+            } catch (error) {
+                // Penanganan Error
+                let errorMessage = "Registrasi gagal. Coba lagi.";
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = "Email ini sudah terdaftar. Silakan login.";
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = "Kata Sandi terlalu lemah. Minimal 6 karakter.";
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = "Format email tidak valid.";
+                }
+                console.error("Firebase Error:", error.code);
+                alert(`Registrasi gagal: ${errorMessage}`);
+            }
+        });
+
+        // --- Logika Menu Dropdown ---
         const menuIcon = document.querySelector('.menu-icon');
         const dropdownMenu = document.querySelector('.dropdown-menu');
         
@@ -300,62 +378,6 @@
 
             if (!isClickInsideMenu && !isClickOnIcon) {
                 dropdownMenu.classList.remove('active');
-            }
-        });
-
-        // --- LOGIKA FIREBASE (SAMA DENGAN RESPON SEBELUMNYA) ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-        
-        const firebaseConfig = {
-            apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
-            authDomain: "mechajob-b7360.firebaseapp.com",
-            projectId: "mechajob-b7360",
-            storageBucket: "mechajob-b7360.firebasestorage.app",
-            messagingSenderId: "753002885541",
-            appId: "1:753002885541:web:96e4964dbd300193ff384c",
-            measurementId: "G-ZY3RS8WGP7"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        document.getElementById("registrationForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            
-            const email = document.getElementById("emailReg").value;
-            const password = document.getElementById("passReg").value;
-            const confirmPassword = document.getElementById("confirmPassReg").value;
-            const nama = document.getElementById("namaReg").value;
-            const telepon = document.getElementById("teleponReg").value;
-            const spesialisasi = document.getElementById("spesialisasiReg").value;
-
-            if (password !== confirmPassword) {
-                alert("Kata Sandi dan Konfirmasi Kata Sandi tidak cocok.");
-                return;
-            }
-            
-            if (password.length < 6) {
-                alert("Kata Sandi harus minimal 6 karakter.");
-                return;
-            }
-
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                
-                // Tambahkan kode untuk menyimpan data tambahan (nama, telepon, spesialisasi) di sini jika perlu.
-                
-                alert(`Registrasi berhasil untuk: ${email}. Selamat datang, ${nama}!`);
-                window.location.href = "login mekanik.html"; 
-                
-            } catch (error) {
-                let errorMessage = "Registrasi gagal. Coba lagi.";
-                if (error.code === 'auth/email-already-in-use') {
-                    errorMessage = "Email sudah terdaftar. Silakan gunakan email lain atau masuk.";
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessage = "Format email tidak valid.";
-                }
-                alert(`Registrasi gagal: ${errorMessage}`);
             }
         });
     </script>
