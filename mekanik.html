@@ -448,91 +448,69 @@ function setupRealtimeMyOrderListener(uid) {
 // 5. FUNGSI LOGIKA (Update Firestore)
 // =========================================================
 
+import { 
+    // Tambahkan impor Transaksi di sini
+    runTransaction,
+    // ... (impor lainnya)
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; 
+
 window.claimOrder = async function(id){
-  const currentOrdersInProgress = STATE.myOrders.filter(o => o.status === 'in-progress').length;
-  
-  // Batasan Akun STANDAR
-  if(!STATE.shop.isPro && currentOrdersInProgress >= STATE.shop.limit){
-    alert(`Batas ${STATE.shop.limit} order aktif tercapai. Upgrade ke PRO untuk batas lebih tinggi.`);
-    return;
-  }
-  
-  if (!confirm(`Yakin ingin mengambil pesanan ID ${id.substring(0, 6)}?`)) {
-    return;
-  }
+    const currentOrdersInProgress = STATE.myOrders.filter(o => o.status === 'in-progress').length;
+    const orderRef = doc(db, "new_orders", id);
 
-  try {
-      const orderRef = doc(db, "new_orders", id);
-      await updateDoc(orderRef, {
-          status: "in-progress",
-          mekanikId: currentUserId,
-          mekanikName: STATE.shop.name, 
-          claimTime: serverTimestamp()
-      });
-      alert(`Pesanan ${id.substring(0, 6)} berhasil Anda ambil!`);
-  } catch (error) {
-      console.error("Gagal mengambil pesanan:", error);
-      alert("Terjadi kesalahan saat mengambil pesanan. Coba lagi.");
-  }
-}
-
-window.finishOrder = async function(id) {
-    const totalCostStr = prompt("Masukkan total biaya service (hanya angka):");
-    if (totalCostStr === null) return; 
-
-    const totalCost = parseInt(totalCostStr);
-
-    if (isNaN(totalCost) || totalCost <= 0) {
-        return alert("Input biaya tidak valid. Harus berupa angka positif.");
-    }
-    
-    if (!confirm(`Yakin ingin menandai pesanan ${id.substring(0, 6)} selesai dengan biaya Rp ${formatCurrency(totalCost)}?`)) {
+    // Batasan Akun STANDAR (Tetap sama)
+    if(!STATE.shop.isPro && currentOrdersInProgress >= STATE.shop.limit){
+        alert(`Batas ${STATE.shop.limit} order aktif tercapai. Upgrade ke PRO untuk batas lebih tinggi.`);
         return;
     }
     
-    try {
-        const orderRef = doc(db, "new_orders", id);
-        await updateDoc(orderRef, {
-            status: "selesai",
-            total: totalCost, 
-            finishTime: serverTimestamp()
-        });
-        alert("Pesanan berhasil diselesaikan!");
-    } catch (error) {
-        console.error("Gagal menyelesaikan pesanan:", error);
-        alert("Terjadi kesalahan saat menyelesaikan pesanan. Coba lagi.");
-    }
-}
-
-window.editProfile = async function(){
-    if (!STATE.shop.isPro) {
-        alert("Fitur Edit Profil hanya tersedia untuk akun PRO. Silakan hubungi admin untuk upgrade.");
+    if (!confirm(`Yakin ingin mengambil pesanan ID ${id.substring(0, 6)}?`)) {
         return;
     }
-    
-    // Asumsi: Kita hanya mengedit Nama dan WA untuk akun PRO
-    const newName = prompt(`Masukkan Nama Bengkel baru (saat ini: ${STATE.shop.name}):`, STATE.shop.name);
-    if (!newName) return; 
-    
-    const newWA = prompt(`Masukkan Nomor WA baru (saat ini: ${STATE.shop.wa}):`, STATE.shop.wa);
-    if (!newWA) return; 
 
     try {
-        const profileRef = doc(db, "mekanik_users", currentUserId);
-        await updateDoc(profileRef, {
-            shopName: newName,
-            shopWA: newWA,
-            // shopAddress tidak diupdate di sini, harus di halaman khusus atau melalui admin
+        await runTransaction(db, async (transaction) => {
+            // 1. Baca dokumen saat ini di dalam Transaksi
+            const orderDoc = await transaction.get(orderRef);
+
+            if (!orderDoc.exists()) {
+                throw "Order tidak ditemukan.";
+            }
+
+            const currentStatus = orderDoc.data().status;
+
+            // 2. Cek apakah status masih 'pending' (Pencegahan Race Condition)
+            if (currentStatus !== "pending") {
+                // Jika sudah diambil oleh orang lain, batalkan Transaksi
+                throw "Order ini sudah diambil oleh mekanik lain atau sudah diproses."; 
+            }
+
+            // 3. Jika status masih 'pending', Lakukan update (Tulis ke database)
+            transaction.update(orderRef, {
+                status: "in-progress",
+                mekanikId: currentUserId,
+                mekanikName: STATE.shop.name, 
+                claimTime: serverTimestamp()
+            });
         });
-        alert("Profil berhasil diperbarui!");
-        // Panggil ulang fetch untuk update tampilan profil di dashboard
-        await fetchAndRenderProfile(currentUserId, currentUserEmail); 
+
+        alert(`Pesanan ${id.substring(0, 6)} berhasil Anda ambil!`);
+
     } catch (error) {
-        console.error("Gagal memperbarui profil:", error);
-        alert("Gagal memperbarui profil. Coba lagi.");
+        console.error("Gagal mengambil pesanan:", error);
+        
+        let userMessage = "Terjadi kesalahan saat mengambil pesanan. Coba lagi.";
+        
+        // Tampilkan pesan kesalahan spesifik jika ada
+        if (typeof error === 'string') {
+            userMessage = error;
+        } else if (error.code && error.code === 'permission-denied') {
+            userMessage = "Akses ditolak (Masalah Izin Firestore). Hubungi Admin.";
+        }
+        
+        alert(`Gagal mengambil pesanan: ${userMessage}`);
     }
 }
-
 // =========================================================
 // 6. LOGIKA AUTENTIKASI FIREBASE & EVENT LISTENERS
 // =========================================================
