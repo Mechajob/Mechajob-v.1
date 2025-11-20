@@ -174,24 +174,24 @@
             <h3><i class="fas fa-user"></i> Detail Kontak Anda</h3>
             
             <div class="form-group">
-                <label for="nama"><i class="fas fa-id-card"></i> Nama Pelanggan</label>
+                <label for="custName"><i class="fas fa-id-card"></i> Nama Pelanggan</label>
                 <input type="text" id="custName" name="nama" required placeholder="Nama Anda (Sesuai KTP)">
             </div>
 
             <div class="form-group">
-                <label for="telepon"><i class="fas fa-phone-alt"></i> Nomor Telepon (Aktif WhatsApp)</label>
+                <label for="custWA"><i class="fas fa-phone-alt"></i> Nomor Telepon (Aktif WhatsApp)</label>
                 <input type="tel" id="custWA" name="telepon" required placeholder="Cth: 081234567890">
             </div>
             
             <h3><i class="fas fa-motorcycle"></i> Detail Kendaraan</h3>
             
             <div class="form-group">
-                <label for="merk"><i class="fas fa-tag"></i> Merk dan Tipe Motor</label>
+                <label for="vehicleModel"><i class="fas fa-tag"></i> Merk dan Tipe Motor</label>
                 <input type="text" id="vehicleModel" name="merk" required placeholder="Cth: Honda Beat 2020 atau Yamaha NMAX">
             </div>
 
             <div class="form-group">
-                <label for="jenis_motor"><i class="fas fa-cogs"></i> Jenis Motor</label>
+                <label for="vehicleType"><i class="fas fa-cogs"></i> Jenis Motor</label>
                 <select id="vehicleType" name="jenis_motor" required>
                     <option value="">Pilih Kategori Motor</option>
                     <option value="Skuter Matic">Skuter Matic (Vario, Beat, NMAX, dll)</option>
@@ -204,7 +204,7 @@
             <h3><i class="fas fa-map-marker-alt"></i> Masalah & Lokasi</h3>
             
             <div class="form-group">
-                <label for="masalah"><i class="fas fa-question-circle"></i> Masalah Utama (Pilih yang paling sesuai)</label>
+                <label for="issueType"><i class="fas fa-question-circle"></i> Masalah Utama (Pilih yang paling sesuai)</label>
                 <select id="issueType" name="masalah" required>
                     <option value="">Pilih Masalah Utama</option>
                     <option value="Motor Mogok">Motor Mogok / Tidak Bisa Hidup</option>
@@ -217,13 +217,13 @@
             </div>
 
             <div class="form-group">
-                <label for="deskripsi"><i class="fas fa-comment-dots"></i> Deskripsi Masalah Lebih Lanjut</label>
+                <label for="issueDesc"><i class="fas fa-comment-dots"></i> Deskripsi Masalah Lebih Lanjut</label>
                 <textarea id="issueDesc" name="deskripsi" rows="4" required 
                     placeholder="Contoh: Motor tidak mau distarter setelah kehujanan. Suara mesin kasar. Sebutkan juga kapan terakhir diservis."></textarea>
             </div>
             
             <div class="form-group">
-                <label for="lokasi"><i class="fas fa-street-view"></i> Alamat Lengkap / Lokasi Anda Sekarang</label>
+                <label for="custLocation"><i class="fas fa-street-view"></i> Alamat Lengkap / Lokasi Anda Sekarang</label>
                 <input type="text" id="custLocation" name="lokasi" required placeholder="Cth: Jl. Anggrek No. 12, Samping Indomaret atau di Kantor, Lantai 5.">
             </div>
 
@@ -239,10 +239,8 @@
     <script type="module">
         // =========================================================
         // 1. KONFIGURASI DAN IMPOR FIREBASE
-        // Pastikan Anda sudah mengatur konfigurasi Firebase di proyek Anda!
         // =========================================================
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        // Impor Firestore: collection dan addDoc untuk menyimpan data baru
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"; 
 
         const firebaseConfig = {
@@ -266,6 +264,7 @@
             
             const btn = document.getElementById("btnSubmitOrder");
             btn.disabled = true;
+            // Tampilkan loading spinner saat mengirim
             btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Mengirim Pesanan...`;
 
             // Mengambil semua data dari formulir
@@ -278,9 +277,9 @@
                 issueDesc: document.getElementById("issueDesc").value,
                 custLocation: document.getElementById("custLocation").value,
                 
-                // Status Awal yang dilihat oleh mekanik
+                // DATA TAMBAHAN UNTUK DATABASE & DASHBOARD
                 status: "pending", 
-                mekanikId: null, // Belum ada mekanik yang ambil
+                mekanikId: null, 
                 orderDate: new Date()
             };
             
@@ -293,13 +292,14 @@
                 
                 alert(`Pesanan Anda berhasil dikirim! Mekanik terdekat akan segera merespon.\nID Pesanan Anda: ${docRef.id}`);
                 
-                // Bersihkan formulir
+                // Bersihkan formulir setelah sukses
                 document.getElementById("customerOrderForm").reset();
 
             } catch (error) {
                 console.error("Gagal mengirim pesanan:", error);
-                alert("Terjadi kesalahan saat mengirim pesanan. Silakan coba lagi. Pastikan koneksi internet Anda stabil.");
+                alert("Terjadi kesalahan saat mengirim pesanan. Silakan coba lagi. Cek koneksi Firebase.");
             } finally {
+                // Kembalikan tombol ke keadaan semula
                 btn.disabled = false;
                 btn.innerHTML = `<i class="fas fa-search"></i> Cari Mekanik Terdekat Sekarang!`;
             }
