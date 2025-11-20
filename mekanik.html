@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Mechajob Standar - Dashboard Bengkel</title>
+<title>Mechajob - Dashboard Bengkel</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
@@ -117,8 +117,8 @@
         <div style="display:flex;gap:15px;align-items:center">
           <div class="profile-logo"><i class="fas fa-tools"></i></div>
           <div>
-            <div style="font-weight:800; font-size: 16px;" id="shopName">Bengkel Maju Motor</div>
-            <div class="muted" id="shopAddr">Jl. Diponegoro No.45, Palu</div>
+            <div style="font-weight:800; font-size: 16px;" id="shopName">Memuat Nama Bengkel...</div>
+            <div class="muted" id="shopAddr">Jl. Diponegoro No.45, Palu (Demo)</div>
             <div style="margin-top:6px" class="muted"><i class="fab fa-whatsapp"></i> WA: <span id="shopWA">0812-3456-7890</span></div>
             <div style="margin-top:8px"><span class="status wait">STANDAR</span></div>
           </div>
@@ -128,9 +128,9 @@
           <strong><i class="fas fa-chart-bar"></i> Ringkasan Kinerja</strong>
         </div>
         <div class="stat-grid">
-          <div class="stat"><div class="num" id="statWaiting">3</div><div class="muted">Pesanan Menunggu</div></div>
-          <div class="stat"><div class="num" id="statTaken">2</div><div class="muted">Pesanan Diambil</div></div>
-          <div class="stat"><div class="num" id="statRevenue">Rp 1.2J</div><div class="muted">Est. Omzet</div></div>
+          <div class="stat"><div class="num" id="statWaiting">0</div><div class="muted">Pesanan Menunggu</div></div>
+          <div class="stat"><div class="num" id="statTaken">0</div><div class="muted">Pesanan Diambil</div></div>
+          <div class="stat"><div class="num" id="statRevenue">Rp 0</div><div class="muted">Est. Omzet</div></div>
         </div>
         <div style="margin-top:15px">
           <div class="note"><i class="fas fa-list-check"></i> Layanan: Ganti Oli, Rem, AC</div>
@@ -191,6 +191,8 @@ import {
     onAuthStateChanged, 
     signOut 
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+// Tambahkan impor Firestore untuk mengambil data profil bengkel
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; 
 
 const firebaseConfig = {
   apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
@@ -204,13 +206,15 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app); // Inisialisasi Firestore
 let currentUserEmail = null; 
 
 // =========================================================
-// 2. STATE APLIKASI
+// 2. STATE APLIKASI (Data Demo)
 // =========================================================
+// Nama Bengkel akan diisi dari Firestore
 const STATE = {
-  shop:{name:"Bengkel Maju Motor",address:"Jl. Diponegoro No.45, Palu",wa:"081234567890"},
+  shop:{name:"Bengkel Maju Motor (Demo)",address:"Jl. Diponegoro No.45, Palu",wa:"081234567890"},
   customers:[
     {id:"C101",name:"Budi",vehicle:"Avanza",issue:"Ganti oli",location:"Jl. Merdeka"},
     {id:"C102",name:"Siti",vehicle:"Brio",issue:"Servis AC",location:"Jl. Kemiri"},
@@ -251,7 +255,6 @@ function render(){
   ctbody.innerHTML="";
   STATE.customers.forEach(c=>{
     const tr=document.createElement("tr");
-    // Penting: Memastikan claimOrder tersedia secara global untuk onclick
     tr.innerHTML=`
     <td>${c.id}</td><td>${c.name}</td><td>${c.vehicle}</td><td>${c.issue}</td><td>${c.location}</td>
     <td><button class="mini" onclick="window.claimOrder('${c.id}')">Ambil</button></td>`;
@@ -263,7 +266,6 @@ function render(){
   otbody.innerHTML="";
   STATE.orders.forEach(o=>{
     const statusClass = o.status.toLowerCase().replace('-', ''); 
-    // Mengubah format status agar terlihat rapi
     let statusText = o.status.replace('-', ' ').split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
@@ -280,10 +282,9 @@ function render(){
 }
 
 // =========================================================
-// 4. FUNGSI LOGIKA (Dipasang ke Window untuk Akses HTML)
+// 4. FUNGSI LOGIKA
 // =========================================================
 
-// Helper function to format currency (like 120000 -> 120.000)
 function formatCurrency(number) {
     if (number === 0) return '0';
     return number.toLocaleString('id-ID');
@@ -303,7 +304,7 @@ window.claimOrder = function(id){
   if(!c) return alert("Pesanan pelanggan tidak ditemukan");
   
   // LOGIKA DEMO: Pindahkan dari customers ke orders
-  const newOrder={id:"O"+(Math.floor(Math.random()*900)+100),cust:c.name,service:c.issue,status:"in-progress",total:150000}; // Nilai default
+  const newOrder={id:"O"+(Math.floor(Math.random()*900)+100),cust:c.name,service:c.issue,status:"in-progress",total:150000}; 
   STATE.orders.push(newOrder);
   STATE.customers=STATE.customers.filter(x=>x.id!==id);
   
@@ -313,21 +314,41 @@ window.claimOrder = function(id){
 
 
 // =========================================================
-// 5. LOGIKA AUTENTIKASI FIREBASE & EVENT LISTENERS
+// 5. LOGIKA AUTENTIKASI FIREBASE & PENGAMBILAN DATA PROFIL
 // =========================================================
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => { // Tambahkan async di sini
     if (user) {
         currentUserEmail = user.email; 
         console.log("Pengguna login:", currentUserEmail);
         
-        // Panggil render setelah mengetahui user terautentikasi
+        // --- AMBIL DATA BENGKEL DARI FIRESTORE ---
+        const docRef = doc(db, "mekanik_users", user.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            
+            // Perbarui elemen HTML Nama Bengkel dengan data dari Firestore
+            document.getElementById("shopName").textContent = data.shopName; 
+            
+            // Opsional: Perbarui status PRO jika ada
+            if (data.isPro) {
+                document.querySelector('.status.wait').textContent = 'PRO';
+                document.querySelector('.status.wait').style.backgroundColor = 'gold';
+            }
+        } else {
+            console.warn("Data profil bengkel tidak ditemukan di Firestore!");
+            // Biarkan nama bengkel default atau set ke 'Profil Tidak Ditemukan'
+        }
+        // --- AKHIR PENGAMBILAN DATA ---
+
         render(); 
         
     } else {
         console.log("Tidak ada pengguna yang login. Mengarahkan ke halaman login.");
         alert("Sesi berakhir. Silakan login kembali.");
-        window.location.href = "login mekanik.html"; // Pastikan ini mengarah ke file login yang benar
+        window.location.href = "login mekanik.html"; 
     }
 });
 
@@ -354,5 +375,4 @@ document.getElementById("btnEditProfile").onclick=()=>alert("Fitur Edit Profil h
 
 </script>
 </body>
-      </html>
-              
+</html>
