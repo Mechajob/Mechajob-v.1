@@ -148,7 +148,8 @@
   
     <header>
         <h1><i class="fas fa-motorcycle"></i> Status Pesanan Anda</h1>
-        <p id="ticketIdDisplay" style="font-size: 16px; margin-top: 5px;">ID Tiket: **Memuat...**</p>
+        <p id="waDisplay" style="font-size: 16px; margin-top: 5px;">Nomor WA: **Memuat...**</p>
+        <div id="ticketIdDisplay" style="font-size: 14px; margin-top: 5px; color: var(--muted);">ID Tiket Aktif: **Memuat...**</div>
     </header>
 
     <div id="content" class="card">
@@ -214,8 +215,8 @@
 
     <div id="notFound" class="not-found" style="display: none;">
         <h2><i class="fas fa-exclamation-triangle"></i> Tiket Tidak Ditemukan</h2>
-        <p>ID Tiket yang Anda masukkan tidak valid atau belum terdaftar. Mohon periksa kembali ID tiket Anda.</p>
-        <a href="login-customer.html" style="background: var(--blue); color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block; margin-top: 15px;">Coba Lagi</a>
+        <p>Nomor WhatsApp yang Anda masukkan tidak memiliki pesanan aktif atau terbaru.</p>
+        <a href="login-customer-wa.html" style="background: var(--blue); color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block; margin-top: 15px;">Coba Lagi</a>
     </div>
 
 </div>
@@ -229,7 +230,12 @@ import {
     getFirestore, 
     doc, 
     onSnapshot,
-    getDoc // Diperlukan untuk mengambil detail mekanik
+    getDoc, 
+    collection, 
+    query, 
+    where, 
+    orderBy, 
+    limit // IMPOR UNTUK QUERY PENCARIAN
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; 
 
 const firebaseConfig = {
@@ -253,33 +259,47 @@ function formatCurrency(number) {
 }
 
 // =========================================================
-// 2. LOGIKA UTAMA (GET TICKET ID & SETUP LISTENER)
+// 2. LOGIKA UTAMA (GET WA NUMBER & SETUP LISTENER)
 // =========================================================
 
 const urlParams = new URLSearchParams(window.location.search);
-const ticketId = urlParams.get('ticket');
+const customerWa = urlParams.get('wa'); // MENGAMBIL PARAMETER 'wa' DARI URL
 
-if (!ticketId) {
-    // Jika tidak ada ID tiket, kembalikan ke halaman login
+if (!customerWa) {
     document.getElementById('content').style.display = 'none';
     document.getElementById('notFound').style.display = 'block';
-    document.getElementById('notFound').querySelector('h2').textContent = "Tidak Ada ID Tiket";
-    document.getElementById('notFound').querySelector('p').textContent = "Anda harus memasukkan ID Tiket untuk melihat status pesanan.";
+    document.getElementById('notFound').querySelector('h2').textContent = "Tidak Ada Nomor WA";
+    document.getElementById('notFound').querySelector('p').textContent = "Anda harus memasukkan Nomor WA untuk melihat status pesanan.";
 } else {
-    document.getElementById("ticketIdDisplay").textContent = `ID Tiket: **${ticketId}**`;
-    setupOrderListener(ticketId);
+    document.getElementById("waDisplay").textContent = `Nomor WA: **${customerWa}**`;
+    // Panggil fungsi pencarian berdasarkan WA
+    setupWaOrderListener(customerWa);
 }
 
 // =========================================================
-// 3. FUNGSI REAL-TIME LISTENER
+// 3. FUNGSI REAL-TIME LISTENER (Mencari berdasarkan custWa)
 // =========================================================
 
-function setupOrderListener(id) {
-    const orderRef = doc(db, "new_orders", id);
+function setupWaOrderListener(waNumber) {
+    const ordersRef = collection(db, "new_orders");
+    
+    // Q: Cari berdasarkan custWa (field yang digunakan di Firestore)
+    // Kemudian urutkan berdasarkan waktu dibuat terbaru (agar order terbaru yang muncul)
+    const q = query(
+        ordersRef, 
+        where("custWa", "==", waNumber), // MENCARI FIELD custWa
+        orderBy("createdAt", "desc"),
+        limit(1) // Hanya ambil satu (yang terbaru)
+    );
 
-    // Mendengarkan perubahan data secara real-time
-    onSnapshot(orderRef, (docSnap) => {
-        if (docSnap.exists()) {
+    onSnapshot(q, (snapshot) => {
+        if (snapshot.docs.length > 0) {
+            const docSnap = snapshot.docs[0];
+            const currentOrderId = docSnap.id; 
+            
+            // Tampilkan ID tiket yang sedang aktif
+            document.getElementById("ticketIdDisplay").textContent = `ID Tiket Aktif: **${currentOrderId.substring(0, 8)}...**`;
+            
             // Data ditemukan, tampilkan dashboard
             document.getElementById('content').style.display = 'block';
             document.getElementById('notFound').style.display = 'none';
@@ -288,6 +308,7 @@ function setupOrderListener(id) {
             // Data tidak ditemukan
             document.getElementById('content').style.display = 'none';
             document.getElementById('notFound').style.display = 'block';
+            document.getElementById('notFound').querySelector('p').textContent = `Tidak ada pesanan aktif atau terbaru yang ditemukan untuk nomor WA ${waNumber}.`;
         }
     }, (error) => {
         console.error("Gagal mendengarkan pesanan:", error);
@@ -297,9 +318,11 @@ function setupOrderListener(id) {
     });
 }
 
+
 // =========================================================
-// 4. FUNGSI RENDER DASHBOARD
+// 4. FUNGSI RENDER DASHBOARD (TIDAK BERUBAH)
 // =========================================================
+// Fungsi ini tetap sama seperti sebelumnya, karena hanya menerima data (data) dan menampilkannya.
 
 async function renderStatus(data) {
     const status = data.status || 'pending';
@@ -356,7 +379,8 @@ async function renderStatus(data) {
             if (mechanicSnap.exists()) {
                 const mData = mechanicSnap.data();
                 document.getElementById('mShopName').textContent = mData.shopName || 'Nama Bengkel Tidak Ditemukan';
-                document.getElementById('mShopWA').textContent = mData.shopWA || 'N/A';
+                // Gunakan WA Mekanik dari dokumen profil mekanik
+                document.getElementById('mShopWA').textContent = mData.shopWA || 'N/A'; 
             } else {
                 document.getElementById('mShopName').textContent = 'Detail Bengkel Tidak Ditemukan';
                 document.getElementById('mShopWA').textContent = 'N/A';
