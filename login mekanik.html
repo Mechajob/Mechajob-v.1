@@ -266,9 +266,10 @@
             }
         });
         
-        // --- LOGIKA FIREBASE (Diambil dari input Anda) ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        // --- LOGIKA FIREBASE ---
+        // Menggunakan versi 10.13.0 agar konsisten dengan dashboard mekanik.
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js"; 
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
@@ -284,14 +285,15 @@
         const auth = getAuth(app);
 
         document.getElementById("loginForm").addEventListener("submit", async (e) => {
-            e.preventDefault(); // Mencegah form reload halaman
+            e.preventDefault(); 
             const email = document.getElementById("emailLog").value;
             const password = document.getElementById("passLog").value;
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
                 alert(`Login berhasil: ${email}`);
-                window.location.href = "mekanik.html"; // pindah ke dashboard setelah login
+                // REDIRECT DIPERBARUI ke nama file yang lebih sesuai
+                window.location.href = "dashboard-mekanik.html"; 
             } catch (error) {
                 // Menangani error dari Firebase
                 let errorMessage = "Login gagal. Periksa kembali email dan kata sandi Anda.";
@@ -299,6 +301,8 @@
                     errorMessage = "Email atau Kata Sandi salah.";
                 } else if (error.code === 'auth/invalid-email') {
                     errorMessage = "Format email tidak valid.";
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage = "Terlalu banyak percobaan gagal. Coba lagi sebentar.";
                 }
                 alert(`Login gagal: ${errorMessage}`);
             }
