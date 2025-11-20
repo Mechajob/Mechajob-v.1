@@ -6,7 +6,7 @@
     <title>Dashboard Mekanik - Mechajob</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* CSS yang disediakan sebelumnya */
+        /* --- GAYA DASAR & VARIABEL --- */
         :root {
             --blue: #2a6ed4;
             --orange: #ff9800;
@@ -21,6 +21,8 @@
             background-color: var(--bg);
             color: #333;
         }
+
+        /* --- HEADER --- */
         .header {
             background-color: var(--blue);
             color: white;
@@ -49,6 +51,8 @@
             transition: background 0.3s;
         }
         .header button:hover { background-color: #e68900; }
+        
+        /* --- KONTEN UTAMA --- */
         .container {
             max-width: 1200px;
             margin: 20px auto;
@@ -60,6 +64,8 @@
             padding-bottom: 5px;
             margin-top: 30px;
         }
+
+        /* --- RINGKASAN PROFIL --- */
         .profile-summary {
             background-color: var(--card);
             padding: 20px;
@@ -86,6 +92,8 @@
             font-weight: bold;
             color: #333;
         }
+
+        /* --- TABEL PESANAN --- */
         .card {
             background-color: var(--card);
             padding: 20px;
@@ -111,6 +119,8 @@
         }
         tr:nth-child(even) { background-color: #f9f9f9; }
         tr:hover { background-color: #f1f1f1; }
+        
+        /* --- Tombol Aksi --- */
         .action-btn {
             padding: 6px 10px;
             border: none;
@@ -121,7 +131,7 @@
         }
         .action-btn:hover { opacity: 0.8; }
         .btn-claim {
-            background-color: #4CAF50;
+            background-color: #4CAF50; /* Hijau */
             color: white;
         }
         .btn-detail {
@@ -139,6 +149,8 @@
         .status-pending { background-color: var(--orange); color: white; }
         .status-progress { background-color: #2196F3; color: white; }
         .status-done { background-color: #4CAF50; color: white; }
+
+        /* --- Responsive --- */
         @media (max-width: 768px) {
             .header h1 { font-size: 1.2em; }
             .profile-summary { flex-direction: column; }
@@ -173,6 +185,10 @@
             <div>
                 <strong>Status Akun:</strong>
                 <p id="accountStatusDisplay" class="status-badge status-done">Standar</p>
+            </div>
+            <div>
+                <strong>Peringkat Bengkel:</strong>
+                <p id="shopRatingDisplay">Memuat...</p>
             </div>
             <button class="action-btn btn-detail" onclick="window.location.href='edit_profile.html'">
                 <i class="fas fa-edit"></i> Edit Profil
@@ -252,8 +268,10 @@
         
         let currentUserId = null;
         
+        // Data Global untuk menyimpan status dashboard
         const STATE = {
-            shop: { name: "Memuat...", address: "Memuat...", wa: "Memuat...", isPro: false }, 
+            // Ditambahkan 'rating'
+            shop: { name: "Memuat...", address: "Memuat...", wa: "Memuat...", isPro: false, rating: 0 }, 
             customers: [], 
             myOrders: [],  
         };
@@ -266,6 +284,23 @@
             document.getElementById("shopNameDisplay").textContent = STATE.shop.name;
             document.getElementById("shopAddressDisplay").textContent = STATE.shop.address;
             document.getElementById("shopWADisplay").textContent = STATE.shop.wa;
+            
+            // TAMPILKAN RATING
+            const ratingDisplay = document.getElementById("shopRatingDisplay");
+            if (STATE.shop.rating > 0) {
+                 // Menampilkan ikon bintang
+                const fullStars = Math.floor(STATE.shop.rating);
+                let starsHTML = '';
+                for (let i = 0; i < fullStars; i++) {
+                    starsHTML += '<i class="fas fa-star" style="color: gold;"></i>';
+                }
+                if (STATE.shop.rating % 1 >= 0.5) {
+                    starsHTML += '<i class="fas fa-star-half-alt" style="color: gold;"></i>';
+                }
+                ratingDisplay.innerHTML = `${STATE.shop.rating.toFixed(1)} ${starsHTML}`;
+            } else {
+                ratingDisplay.textContent = 'Belum ada rating';
+            }
             
             const statusBadge = document.getElementById("accountStatusDisplay");
             statusBadge.textContent = STATE.shop.isPro ? "PRO" : "Standar";
@@ -286,6 +321,205 @@
                         <td>${order.vehicle}</td>
                         <td>${order.issue}</td>
                         <td>${order.location}</td>
+                        <td>
+                            <button class="action-btn btn-claim" onclick="window.claimOrder('${order.id}')">Ambil</button>
+                        </td>
+                    `;
+                });
+            }
+
+            // C. Render Tabel Orderan Saya (myOrders)
+            const myOrdersBody = document.getElementById("myOrdersTableBody");
+            myOrdersBody.innerHTML = ''; 
+
+            if (STATE.myOrders.length === 0) {
+                 myOrdersBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Anda belum mengambil orderan. Ambil dari daftar di atas.</td></tr>';
+            } else {
+                 STATE.myOrders.forEach(order => {
+                    const statusClass = order.status === 'in-progress' ? 'status-progress' : 'status-done';
+                    const totalDisplay = order.total ? `Rp ${order.total.toLocaleString('id-ID')}` : 'Belum selesai';
+                    const actionButton = order.status === 'in-progress' 
+                                         ? `<button class="action-btn btn-claim" onclick="window.finishOrder('${order.id}')">Selesaikan</button>`
+                                         : `<button class="action-btn btn-detail" disabled>Selesai</button>`;
+                                         
+                    const row = myOrdersBody.insertRow();
+                    row.innerHTML = `
+                        <td>${order.id.substring(0, 6)}...</td>
+                        <td>${order.cust}</td>
+                        <td>${order.service}</td>
+                        <td><span class="status-badge ${statusClass}">${order.status}</span></td>
+                        <td>${totalDisplay}</td>
+                        <td>${actionButton}</td>
+                    `;
+                });
+            }
+        }
+        
+        // =========================================================
+        // 3. LOGIKA FIREBASE LISTENERS
+        // =========================================================
+        
+        async function fetchAndRenderProfile(uid) {
+            try {
+                const docRef = doc(db, "mekanik_users", uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    STATE.shop = {
+                        name: data.shopName || "Nama Bengkel Belum Disetel",
+                        address: data.shopAddress || "Alamat Belum Disetel",
+                        wa: data.shopWA || "WA Belum Disetel",
+                        isPro: data.isPro || false,
+                        // AMBIL FIELD RATING BARU
+                        rating: data.rating || 0 
+                    };
+                    render();
+                } else {
+                    console.warn("Profil mekanik tidak ditemukan.");
+                }
+            } catch (error) {
+                console.error("Gagal memuat profil:", error);
+            }
+        }
+
+        // FUNGSI Mendengarkan Pesanan BARU (status: pending) secara Realtime
+        function setupRealtimeNewOrderListener() {
+            const ordersRef = collection(db, "new_orders");
+            const q = query(ordersRef, where("status", "==", "pending"));
+
+            onSnapshot(q, (snapshot) => {
+                const pendingOrders = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    pendingOrders.push({
+                        id: doc.id, 
+                        name: data.custName,
+                        vehicle: data.vehicle || `${data.vehicleType} ${data.vehicleModel}`,
+                        issue: data.issueType || data.issueDesc, 
+                        location: data.custLocation,
+                        data: data,
+                    });
+                });
+                
+                STATE.customers = pendingOrders;
+                console.log("Pesanan baru dimuat:", STATE.customers.length);
+                render(); 
+            }, (error) => {
+                console.error("Gagal mendengarkan pesanan baru:", error);
+                document.getElementById("newOrdersTableBody").innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Gagal memuat data: Cek koneksi Firebase.</td></tr>';
+            });
+        }
+        
+        // FUNGSI Mendengarkan Orderan SAYA (mekanikId: currentUserId) secara Realtime
+        function setupRealtimeMyOrderListener(uid) {
+            const ordersRef = collection(db, "new_orders");
+            const q = query(ordersRef, where("mekanikId", "==", uid));
+
+            onSnapshot(q, (snapshot) => {
+                const myOrders = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    myOrders.push({
+                        id: doc.id, 
+                        cust: data.custName,
+                        service: data.issueType || data.issueDesc,
+                        status: data.status,
+                        total: data.total || 0 
+                    });
+                });
+                
+                STATE.myOrders = myOrders;
+                console.log("Orderan Saya dimuat:", STATE.myOrders.length);
+                render(); 
+            }, (error) => {
+                console.error("Gagal mendengarkan orderan saya:", error);
+            });
+        }
+
+
+        // =========================================================
+        // 4. LOGIKA AUTENTIKASI DAN STARTUP
+        // =========================================================
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                
+                await fetchAndRenderProfile(currentUserId);
+                
+                setupRealtimeNewOrderListener();
+                
+                setupRealtimeMyOrderListener(currentUserId);
+                
+            } else {
+                window.location.href = "login mekanik.html";
+            }
+        });
+        
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            signOut(auth).catch((error) => {
+                console.error("Logout error:", error);
+                alert("Gagal logout. Coba lagi.");
+            });
+        });
+
+
+        // =========================================================
+        // 5. FUNGSI LOGIKA TOMBOL (Klaim dan Selesaikan)
+        // =========================================================
+
+        window.claimOrder = async function(id){ 
+            if (!currentUserId || !STATE.shop.name) {
+                alert("Profil tidak lengkap. Silakan login atau periksa data bengkel Anda.");
+                return;
+            }
+            
+            const currentOrdersInProgress = STATE.myOrders.filter(o => o.status === 'in-progress').length;
+            const MAX_ORDERS = STATE.shop.isPro ? 999 : 5;
+            
+            if(currentOrdersInProgress >= MAX_ORDERS){
+                alert(`Batas ${MAX_ORDERS} order aktif tercapai. Upgrade ke PRO untuk batas lebih tinggi.`);
+                return;
+            }
+            
+            if (!confirm(`Yakin ingin mengambil pesanan ID ${id.substring(0, 6)}?`)) {
+                return;
+            }
+
+            try {
+                const orderRef = doc(db, "new_orders", id);
+                await updateDoc(orderRef, {
+                    status: "in-progress",
+                    mekanikId: currentUserId,
+                    mekanikName: STATE.shop.name, 
+                    claimTime: new Date()
+                });
+                
+                alert(`Pesanan ${id.substring(0, 6)} berhasil Anda ambil! Cek di bagian "Orderan Saya".`);
+
+            } catch (error) {
+                console.error("Gagal mengambil pesanan:", error);
+                alert("Terjadi kesalahan saat mengambil pesanan. Coba lagi.");
+            }
+        }
+        
+        window.finishOrder = async function(id) {
+             const totalCost = prompt("Masukkan total biaya service (hanya angka):");
+             if (totalCost === null || isNaN(parseInt(totalCost))) {
+                 return alert("Pembatalan atau input biaya tidak valid.");
+             }
+             
+             if (!confirm(`Yakin ingin menandai pesanan ${id.substring(0, 6)} selesai dengan biaya Rp ${parseInt(totalCost).toLocaleString('id-ID')}?`)) {
+                 return;
+             }
+             
+             try {
+                const orderRef = doc(db, "new_orders", id);
+                await updateDoc(orderRef, {
+                    status: "selesai",
+                    total: parseInt(totalCost),
+                    finishTime: new Date()
+     }</td>
                         <td>
                             <button class="action-btn btn-claim" onclick="window.claimOrder('${order.id}')">Ambil</button>
                         </td>
