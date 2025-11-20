@@ -576,14 +576,14 @@ onAuthStateChanged(auth, async (user) => {
         
     } else {
         console.log("Tidak ada pengguna yang login.");
-        window.location.href = "login-mekanik.html"; // Pastikan redirect ke nama file login yang baru/benar
+        window.location.href = "login mekanik.html"; // Pastikan redirect ke nama file login yang baru/benar
     }
 });
 
 // Implementasi Logout Firebase (untuk kedua tombol)
 const handleLogout = () => {
     signOut(auth).then(() => {
-        window.location.href = "login-mekanik.html"; 
+        window.location.href = "login mekanik.html"; 
     }).catch((error) => {
         console.error("Logout error:", error);
         alert("Gagal logout. Coba lagi.");
