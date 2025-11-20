@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Status Pesanan - Mechajob</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f9; 
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .form-box {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+        }
+        h2 {
+            color: #2a6ed4;
+            margin-bottom: 25px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0 20px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            width: 100%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #f57c00;
+        }
+        .info {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .info a {
+            color: #2a6ed4;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-box">
+        <h2><i class="fas fa-ticket-alt"></i> Cek Status Pesanan</h2>
+        
+        <form id="ticketForm">
+            <input type="text" id="ticketId" placeholder="Masukkan ID Tiket Pesanan Anda" required>
+            <button type="submit" id="btnCheckStatus">Cek Status</button>
+        </form>
+        
+        <p class="info">ID Tiket diberikan setelah Anda membuat pemesanan layanan.</p>
+        <p class="info"><a href="index.html">Kembali ke Halaman Utama</a></p>
+        
+    </div>
+
+    <script>
+        document.getElementById("ticketForm").addEventListener("submit", function(e) {
+            e.preventDefault(); 
+            const ticketId = document.getElementById("ticketId").value.trim();
+            
+            if (ticketId) {
+                // Redirect ke dashboard pelanggan dengan ID tiket sebagai parameter URL
+                window.location.href = `dashboard-customer.html?ticket=${ticketId}`;
+            } else {
+                alert("Mohon masukkan ID Tiket Pesanan.");
+            }
+        });
+    </script>
+</body>
+</html>
