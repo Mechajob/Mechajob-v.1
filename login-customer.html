@@ -69,28 +69,29 @@
 <body>
 
     <div class="form-box">
-        <h2><i class="fas fa-ticket-alt"></i> Cek Status Pesanan</h2>
+        <h2><i class="fab fa-whatsapp"></i> Cek Status Pesanan (Nomor WA)</h2>
         
-        <form id="ticketForm">
-            <input type="text" id="ticketId" placeholder="Masukkan ID Tiket Pesanan Anda" required>
+        <form id="waForm">
+            <input type="tel" id="customerWa" placeholder="Masukkan Nomor WhatsApp Anda (misal: 081234567890)" required>
             <button type="submit" id="btnCheckStatus">Cek Status</button>
         </form>
         
-        <p class="info">ID Tiket diberikan setelah Anda membuat pemesanan layanan.</p>
+        <p class="info">Anda akan melihat status pesanan terbaru Anda.</p>
         <p class="info"><a href="index.html">Kembali ke Halaman Utama</a></p>
         
     </div>
 
     <script>
-        document.getElementById("ticketForm").addEventListener("submit", function(e) {
+        document.getElementById("waForm").addEventListener("submit", function(e) {
             e.preventDefault(); 
-            const ticketId = document.getElementById("ticketId").value.trim();
+            // Ambil nilai dari customerWa
+            const customerWa = document.getElementById("customerWa").value.trim();
             
-            if (ticketId) {
-                // Redirect ke dashboard pelanggan dengan ID tiket sebagai parameter URL
-                window.location.href = `dashboard-customer.html?ticket=${ticketId}`;
+            if (customerWa) {
+                // Redirect ke dashboard dengan Nomor WA sebagai parameter URL
+                window.location.href = `dashboard-customer-wa.html?wa=${customerWa}`;
             } else {
-                alert("Mohon masukkan ID Tiket Pesanan.");
+                alert("Mohon masukkan Nomor WhatsApp Anda.");
             }
         });
     </script>
