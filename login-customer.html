@@ -512,32 +512,5 @@ async function renderStatus(data) {
 }
 </script>
 </body>
-</html>
-    <div class="form-box">
-        <h2><i class="fas fa-ticket-alt"></i> Cek Status Pesanan</h2>
-        
-        <form id="ticketForm">
-            <input type="text" id="ticketId" placeholder="Masukkan ID Tiket Pesanan Anda" required>
-            <button type="submit" id="btnCheckStatus">Cek Status</button>
-        </form>
-        
-        <p class="info">ID Tiket diberikan setelah Anda membuat pemesanan layanan.</p>
-        <p class="info"><a href="index.html">Kembali ke Halaman Utama</a></p>
-        
-    </div>
-
-    <script>
-        document.getElementById("ticketForm").addEventListener("submit", function(e) {
-            e.preventDefault(); 
-            const ticketId = document.getElementById("ticketId").value.trim();
-            
-            if (ticketId) {
-                // Redirect ke dashboard pelanggan dengan ID tiket sebagai parameter URL
-                window.location.href = `dashboard-customer.html?ticket=${ticketId}`;
-            } else {
-                alert("Mohon masukkan ID Tiket Pesanan.");
-            }
-        });
-    </script>
-</body>
-</html>
+  </html>
+                                                                     
