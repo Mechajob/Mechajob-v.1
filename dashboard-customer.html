@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Status Orderan Anda - Mechajob</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --orange:#ff9800; 
+    --blue:#2a6ed4; 
+    --bg:#f4f7f9; 
+    --card:#ffffff;
+    --muted:#6b7280; 
+    --success:#28a745; 
+    --danger:#dc3545;
+  }
+  
+  *{box-sizing:border-box}
+  body{font-family:Arial,sans-serif;margin:0;background:var(--bg);color:#111; padding: 20px;}
+  .wrap{max-width:800px;margin:20px auto;}
+  
+  /* Header */
+  header{
+    text-align: center;
+    padding: 20px;
+    background: var(--blue);
+    color: white;
+    border-radius: 10px 10px 0 0;
+  }
+  header h1{margin:0;font-size:24px;}
+  
+  /* Status Card */
+  .card{background:var(--card);padding:25px;border-radius:0 0 10px 10px;box-shadow:0 6px 20px rgba(10,10,20,0.1); margin-bottom: 20px;}
+  
+  /* Info Grid */
+  .info-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+  }
+  .info-item div:first-child{color:var(--muted);font-size:13px; margin-bottom: 4px;}
+  .info-item div:last-child{font-weight: bold; font-size: 16px;}
+  
+  /* Status Badge */
+  .status-badge{
+    display: inline-block;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-weight: 700;
+    font-size: 16px;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .status-badge.pending{background: var(--orange);}
+  .status-badge.in-progress{background: var(--blue);}
+  .status-badge.selesai{background: var(--success);}
+  .status-badge.dibatalkan{background: var(--danger);}
+
+  /* Step Indicator */
+  .steps-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 25px;
+      padding: 0 10px;
+  }
+
+  .step {
+      text-align: center;
+      flex-grow: 1;
+      position: relative;
+      color: var(--muted);
+      font-size: 13px;
+  }
+
+  .step-icon {
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      border-radius: 50%;
+      background: #ccc;
+      color: white;
+      margin: 0 auto 5px;
+      transition: all 0.3s;
+      font-size: 18px;
+  }
+
+  .step.active .step-icon {
+      background: var(--blue);
+      box-shadow: 0 0 0 3px rgba(42, 110, 212, 0.4);
+  }
+
+  .step-line {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      right: 50%;
+      height: 2px;
+      background: #ccc;
+      z-index: -1;
+      transition: background 0.3s;
+  }
+
+  .step:not(:last-child) .step-line {
+      right: -50%;
+  }
+
+  .step.active + .step:before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--blue);
+      z-index: -1;
+  }
+  
+  /* Mechanic Info */
+  .mechanic-info {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      background: #f8fafc;
+  }
+
+  .mechanic-info i {
+      color: var(--blue);
+      margin-right: 8px;
+  }
+  
+  .not-found {
+      text-align: center;
+      padding: 40px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  
+    <header>
+        <h1><i class="fas fa-motorcycle"></i> Status Pesanan Anda</h1>
+        <p id="ticketIdDisplay" style="font-size: 16px; margin-top: 5px;">ID Tiket: **Memuat...**</p>
+    </header>
+
+    <div id="content" class="card">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="font-size: 20px; font-weight: bold;">Status Saat Ini:</div>
+            <div id="currentStatus">
+                <span class="status-badge pending">MEMUAT</span>
+            </div>
+        </div>
+        
+        <div class="steps-container">
+            <div class="step active" id="step1">
+                <div class="step-icon"><i class="fas fa-file-alt"></i></div>
+                Permintaan Dibuat
+                <div class="step-line"></div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-icon"><i class="fas fa-tools"></i></div>
+                Proses Pengerjaan
+                <div class="step-line"></div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                Selesai / Pembayaran
+            </div>
+        </div>
+        
+        <div class="info-grid">
+            <div class="info-item">
+                <div>Nama Pelanggan</div>
+                <div id="custName">Memuat...</div>
+            </div>
+            <div class="info-item">
+                <div>Kendaraan</div>
+                <div id="vehicleType">Memuat...</div>
+            </div>
+            <div class="info-item">
+                <div>Keluhan Utama</div>
+                <div id="issueDesc">Memuat...</div>
+            </div>
+            <div class="info-item">
+                <div>Waktu Permintaan</div>
+                <div id="createTime">Memuat...</div>
+            </div>
+            <div class="info-item" id="mechanicDiv">
+                <div>Mekanik Penanggung Jawab</div>
+                <div id="mechanicName">Menunggu klaim...</div>
+            </div>
+            <div class="info-item" id="totalDiv" style="display: none;">
+                <div>**TOTAL BIAYA**</div>
+                <div id="totalCost" style="color: var(--danger);">Memuat...</div>
+            </div>
+        </div>
+
+        <div class="mechanic-info" id="mechanicDetails" style="display: none;">
+            <div style="font-weight: bold; margin-bottom: 10px; color: var(--blue);"><i class="fas fa-id-badge"></i> Kontak Mekanik Anda:</div>
+            <p style="margin: 5px 0;"><i class="fas fa-user-cog"></i> **Nama Bengkel:** <span id="mShopName"></span></p>
+            <p style="margin: 5px 0;"><i class="fab fa-whatsapp"></i> **WhatsApp:** <span id="mShopWA"></span></p>
+        </div>
+
+    </div>
+
+    <div id="notFound" class="not-found" style="display: none;">
+        <h2><i class="fas fa-exclamation-triangle"></i> Tiket Tidak Ditemukan</h2>
+        <p>ID Tiket yang Anda masukkan tidak valid atau belum terdaftar. Mohon periksa kembali ID tiket Anda.</p>
+        <a href="login-customer.html" style="background: var(--blue); color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block; margin-top: 15px;">Coba Lagi</a>
+    </div>
+
+</div>
+
+<script type="module">
+// =========================================================
+// 1. KONFIGURASI DAN IMPOR FIREBASE
+// =========================================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { 
+    getFirestore, 
+    doc, 
+    onSnapshot,
+    getDoc 
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; 
+
+const firebaseConfig = {
+    // GANTI DENGAN KONFIGURASI FIREBASE ANDA YANG SEBENARNYA
+    apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
+    authDomain: "mechajob-b7360.firebaseapp.com",
+    projectId: "mechajob-b7360",
+    storageBucket: "mechajob-b7360.firebasestorage.app",
+    messagingSenderId: "753002885541",
+    appId: "1:753002885541:web:96e4964dbd300193ff384c",
+    measurementId: "G-ZY3RS8WGP7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Helper function untuk format mata uang
+function formatCurrency(number) {
+    if (number === 0 || number === undefined || number === null) return '0';
+    return number.toLocaleString('id-ID');
+}
+
+// =========================================================
+// 2. LOGIKA UTAMA (GET TICKET ID & SETUP LISTENER)
+// =========================================================
+
+const urlParams = new URLSearchParams(window.location.search);
+const ticketId = urlParams.get('ticketId'); // Mengambil parameter 'ticketId' dari URL
+
+if (!ticketId) {
+    // Jika tidak ada ID tiket, tampilkan not found
+    document.getElementById('content').style.display = 'none';
+    document.getElementById('notFound').style.display = 'block';
+    document.getElementById('notFound').querySelector('h2').textContent = "Tidak Ada ID Tiket";
+    document.getElementById('notFound').querySelector('p').textContent = "Anda harus memasukkan ID Tiket untuk melihat status pesanan.";
+} else {
+    // Tampilkan ID Tiket di header
+    document.getElementById("ticketIdDisplay").textContent = `ID Tiket: **${ticketId}**`;
+    setupOrderListener(ticketId);
+}
+
+// =========================================================
+// 3. FUNGSI REAL-TIME LISTENER (Mendengarkan dokumen spesifik)
+// =========================================================
+
+function setupOrderListener(id) {
+    // Mengambil referensi dokumen langsung menggunakan ID dokumen
+    const orderRef = doc(db, "new_orders", id);
+
+    // Mendengarkan perubahan data secara real-time pada dokumen tunggal
+    onSnapshot(orderRef, (docSnap) => {
+        if (docSnap.exists()) {
+            // Data ditemukan
+            document.getElementById('content').style.display = 'block';
+            document.getElementById('notFound').style.display = 'none';
+            renderStatus(docSnap.data());
+        } else {
+            // Data tidak ditemukan
+            document.getElementById('content').style.display = 'none';
+            document.getElementById('notFound').style.display = 'block';
+        }
+    }, (error) => {
+        console.error("Gagal mendengarkan pesanan:", error);
+        alert("Terjadi kesalahan koneksi ke server. Coba muat ulang halaman.");
+        document.getElementById('content').style.display = 'none';
+        document.getElementById('notFound').style.display = 'block';
+    });
+}
+
+// =========================================================
+// 4. FUNGSI RENDER DASHBOARD
+// =========================================================
+
+async function renderStatus(data) {
+    const status = data.status || 'pending';
+    const statusDisplay = document.getElementById('currentStatus');
+    const steps = document.querySelectorAll('.step');
+    
+    // 4a. Update Status Badge & Steps
+    const statusClass = status.toLowerCase().replace('-', '');
+    const statusTextMap = {
+        'pending': 'MENUNGGU MEKANIK',
+        'in-progress': 'SEDANG DIKERJAKAN',
+        'selesai': 'SELESAI (MENUNGGU PEMBAYARAN)',
+        'dibatalkan': 'DIBATALKAN'
+    };
+    
+    statusDisplay.innerHTML = `<span class="status-badge ${statusClass}">${statusTextMap[status] || status.toUpperCase()}</span>`;
+
+    // Reset dan atur Step Indicator
+    steps.forEach(step => step.classList.remove('active'));
+    document.getElementById('step1').classList.add('active'); // Selalu aktif
+
+    if (status === 'in-progress' || status === 'selesai') {
+        document.getElementById('step2').classList.add('active');
+    }
+    if (status === 'selesai') {
+        document.getElementById('step3').classList.add('active');
+    }
+
+    // 4b. Update Detail Pesanan
+    document.getElementById('custName').textContent = data.custName || 'N/A';
+    document.getElementById('vehicleType').textContent = data.vehicle || `${data.vehicleType} ${data.vehicleModel}` || 'N/A';
+    document.getElementById('issueDesc').textContent = data.issueType || data.issueDesc || 'N/A';
+    
+    let createTime = 'N/A';
+    if (data.createdAt && data.createdAt.toDate) {
+        const date = data.createdAt.toDate();
+        createTime = date.toLocaleDateString('id-ID') + ' ' + date.toLocaleTimeString('id-ID');
+    }
+    document.getElementById('createTime').textContent = createTime;
+    
+    // 4c. Update Detail Mekanik
+    const mechanicDiv = document.getElementById('mechanicDetails');
+    const mechanicNameDisplay = document.getElementById('mechanicName');
+    
+    if (data.mekanikId) {
+        mechanicNameDisplay.textContent = data.mekanikName || 'Mekanik Tidak Dikenal';
+        mechanicDiv.style.display = 'block';
+        
+        // Ambil detail WA dari koleksi mekanik_users
+        try {
+            const mechanicDocRef = doc(db, "mekanik_users", data.mekanikId);
+            const mechanicSnap = await getDoc(mechanicDocRef);
+            
+            if (mechanicSnap.exists()) {
+                const mData = mechanicSnap.data();
+                document.getElementById('mShopName').textContent = mData.shopName || 'Nama Bengkel Tidak Ditemukan';
+                document.getElementById('mShopWA').textContent = mData.shopWA || 'N/A';
+            } else {
+                document.getElementById('mShopName').textContent = 'Detail Bengkel Tidak Ditemukan';
+                document.getElementById('mShopWA').textContent = 'N/A';
+            }
+        } catch (e) {
+            console.error("Gagal mengambil detail mekanik:", e);
+        }
+
+    } else {
+        mechanicNameDisplay.textContent = 'Menunggu Mekanik mengklaim pesanan.';
+        mechanicDiv.style.display = 'none';
+    }
+
+    // 4d. Update Total Biaya
+    const totalDiv = document.getElementById('totalDiv');
+    if (status === 'selesai') {
+        totalDiv.style.display = 'block';
+        document.getElementById('totalCost').textContent = `Rp ${formatCurrency(data.total)}`;
+    } else {
+        totalDiv.style.display = 'none';
+    }
+}
+</script>
+</body>
+</html>
