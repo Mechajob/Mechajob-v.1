@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dashboard Admin PUBLIK - SEMUA PESANAN</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --red:#dc3545; 
+    --bg:#f4f7f9; 
+    --card:#ffffff;
+    --muted:#6b7280; 
+    --success:#28a745; 
+    --warning:#ffc107;
+  }
+  
+  *{box-sizing:border-box}
+  body{font-family:Arial,sans-serif;margin:0;background:var(--bg);color:#111; padding: 20px;}
+  .wrap{max-width:1200px;margin:20px auto;}
+  
+  /* Header */
+  header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: var(--red);
+    color: white;
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 20px;
+  }
+  header h1{margin:0;font-size:24px;}
+  #btnLogout{ /* Diganti jadi info */
+    background: white;
+    color: var(--red);
+    border: 1px solid var(--red);
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: default;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  
+  /* Order Table Styling */
+  .card{background:var(--card);padding:25px;border-radius:10px;box-shadow:0 6px 20px rgba(10,10,20,0.1);}
+  .order-table{width:100%;border-collapse:collapse;margin-top:20px;}
+  .order-table th, .order-table td{padding:12px;text-align:left;border-bottom:1px solid #eee;}
+  .order-table th{background-color:#f8f9fa;font-size:14px;color:var(--muted);}
+  
+  .status-badge{
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .status-badge.pending{background: var(--warning); color: #856404;}
+  .status-badge.in-progress{background: #007bff; color: white;}
+  .status-badge.selesai{background: var(--success); color: white;}
+  .status-badge.dibatalkan{background: var(--red); color: white;}
+
+  .loading-message { text-align: center; padding: 30px; font-size: 18px; color: var(--muted);}
+  .action-button { background: var(--red); color: white; padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 5px;}
+  .action-button:hover { opacity: 0.8;}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  
+    <header>
+        <h1><i class="fas fa-clipboard-list"></i> Dashboard Admin (Akses Publik)</h1>
+        <div id="btnLogout"><i class="fas fa-exclamation-triangle"></i> AKSES TIDAK TERPROTEKSI</div>
+    </header>
+
+    <div class="card">
+        <div id="orderList">
+            <p class="loading-message"><i class="fas fa-spinner fa-spin"></i> Memuat data pesanan...</p>
+        </div>
+    </div>
+
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { 
+        getFirestore, 
+        collection, 
+        query, 
+        orderBy, 
+        onSnapshot,
+        doc, 
+        updateDoc
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        // GANTI DENGAN KONFIGURASI FIREBASE ANDA
+        apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
+        authDomain: "mechajob-b7360.firebaseapp.com",
+        projectId: "mechajob-b7360",
+        // ...
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const orderListDiv = document.getElementById('orderList');
+
+    // Helper function untuk format mata uang
+    function formatCurrency(number) {
+        if (number === undefined || number === null) return '-';
+        return number.toLocaleString('id-ID');
+    }
+
+    // =========================================================
+    // 1. OTENTIKASI (DIHAPUS - Langsung Load Data)
+    // =========================================================
+    
+    // Panggil fungsi load segera setelah inisialisasi
+    document.addEventListener('DOMContentLoaded', loadAllOrders);
+
+
+    // =========================================================
+    // 2. LOAD SEMUA ORDER (REAL-TIME)
+    // =========================================================
+    function loadAllOrders() {
+        // Query tanpa filter otentikasi
+        const q = query(collection(db, "new_orders"), orderBy("createdAt", "desc"));
+
+        onSnapshot(q, (snapshot) => {
+            if (snapshot.empty) {
+                orderListDiv.innerHTML = '<p class="loading-message">Tidak ada pesanan yang ditemukan.</p>';
+                return;
+            }
+            
+            let tableHTML = `
+                <table class="order-table">
+                    <thead>
+                        <tr>
+                            <th>ID Tiket</th>
+                            <th>Waktu Pesan</th>
+                            <th>Pelanggan</th>
+                            <th>Keluhan</th>
+                            <th>Mekanik</th>
+                            <th>Biaya Total</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTbody">
+                    </tbody>
+                </table>
+            `;
+            orderListDiv.innerHTML = tableHTML;
+            const tbody = document.getElementById('ordersTbody');
+            tbody.innerHTML = ''; 
+
+            snapshot.docs.forEach((docSnapshot) => {
+                const data = docSnapshot.data();
+                const orderId = docSnapshot.id;
+                
+                const statusClass = (data.status || 'pending').toLowerCase().replace('-', '');
+                const statusDisplay = `<span class="status-badge ${statusClass}">${(data.status || 'PENDING').toUpperCase()}</span>`;
+
+                let createTime = '-';
+                if (data.createdAt && data.createdAt.toDate) {
+                    const date = data.createdAt.toDate();
+                    createTime = date.toLocaleDateString('id-ID') + ' ' + date.toLocaleTimeString('id-ID');
+                }
+
+                // Tombol Aksi (Tombol ini akan berfungsi jika Rules Firebase mengizinkan write: if true)
+                let actionButtons = '';
+                if (data.status === 'pending') {
+                    actionButtons = `<button class="action-button update-btn" data-id="${orderId}" data-status="in-progress">Mulai Proses</button>`;
+                } else if (data.status === 'in-progress') {
+                    actionButtons = `<button class="action-button update-btn" data-id="${orderId}" data-status="selesai" style="background: var(--success);">Selesai</button>`;
+                } else if (data.status === 'selesai') {
+                    actionButtons = `<button class="action-button" disabled style="background: var(--muted);">Selesai</button>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${orderId.substring(0, 8)}...</td>
+                        <td>${createTime}</td>
+                        <td>${data.custName || '-'} (${data.custWa || 'N/A'})</td>
+                        <td>${data.issueType || '-'}</td>
+                        <td>${data.mekanikName || 'Menunggu Klaim'}</td>
+                        <td>Rp ${formatCurrency(data.total)}</td>
+                        <td>${statusDisplay}</td>
+                        <td>${actionButtons}</td>
+                    </tr>
+                `;
+            });
+            
+            document.querySelectorAll('.update-btn').forEach(button => {
+                button.addEventListener('click', handleUpdateStatus);
+            });
+
+        }, (error) => {
+            console.error("Gagal memuat pesanan:", error);
+            orderListDiv.innerHTML = `<p class="loading-message" style="color: var(--red);"><i class="fas fa-times-circle"></i> Error: Gagal memuat data. Cek Aturan Firebase!</p>`;
+        });
+    }
+
+    // =========================================================
+    // 3. FUNGSI UPDATE STATUS
+    // =========================================================
+    async function handleUpdateStatus(e) {
+        const orderId = e.target.getAttribute('data-id');
+        const newStatus = e.target.getAttribute('data-status');
+        
+        if (!confirm(`Yakin ingin mengubah status order ${orderId.substring(0, 8)}... menjadi ${newStatus.toUpperCase()}?`)) {
+            return;
+        }
+
+        try {
+            const orderRef = doc(db, "new_orders", orderId);
+            await updateDoc(orderRef, {
+                status: newStatus,
+                updatedAt: new Date() 
+            });
+            alert(`Status Order ${orderId.substring(0, 8)}... berhasil diubah menjadi ${newStatus.toUpperCase()}`);
+        } catch (error) {
+            console.error("Gagal update status:", error);
+            alert("Gagal mengubah status. Pastikan aturan 'write' di Firebase disetel ke 'allow write: if true'!");
+        }
+    }
+
+</script>
+</body>
+</html>
