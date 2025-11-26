@@ -1,259 +1,258 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Status Orderan Anda - Mechajob</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mechajob - Pesan Perbaikan Motor</title>
 
-<style>
-  :root{
-    --orange:#ff9800; 
-    --blue:#2a6ed4; 
-    --bg:#f4f7f9; 
-    --card:#ffffff;
-    --muted:#6b7280; 
-    --success:#28a745; 
-    --danger:#dc3545;
-  }
-  
-  *{box-sizing:border-box}
-  body{font-family:Arial,sans-serif;margin:0;background:var(--bg);color:#111; padding: 20px;}
-  .wrap{max-width:800px;margin:20px auto;}
-  
-  /* Header */
-  header{
-    text-align: center;
-    padding: 20px;
-    background: var(--blue);
-    color: white;
-    border-radius: 10px 10px 0 0;
-  }
-  header h1{margin:0;font-size:24px;}
-  
-  /* Status Card */
-  .card{background:var(--card);padding:25px;border-radius:0 0 10px 10px;box-shadow:0 6px 20px rgba(10,10,20,0.1); margin-bottom: 20px;}
-  
-  /* Info Grid */
-  .info-grid{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid #eee;
-  }
-  .info-item div:first-child{color:var(--muted);font-size:13px; margin-bottom: 4px;}
-  .info-item div:last-child{font-weight: bold; font-size: 16px;}
-  
-  /* Status Badge */
-  .status-badge{
-    display: inline-block;
-    padding: 8px 15px;
-    border-radius: 5px;
-    font-weight: 700;
-    font-size: 16px;
-    color: white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-  .status-badge.pending{background: var(--orange);}
-  .status-badge.in-progress{background: var(--blue);}
-  .status-badge.selesai{background: var(--success);}
-  .status-badge.dibatalkan{background: var(--danger);}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  /* Step Indicator */
-  .steps-container {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 25px;
-      padding: 0 10px;
-  }
+    <style>
+        /* --- 1. VARIABEL CSS --- */
+        :root {
+            --blue: #2a6ed4;
+            --orange: #ff9800;
+            --bg: #f4f7f9;
+            --card: #ffffff;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
 
-  .step {
-      text-align: center;
-      flex-grow: 1;
-      position: relative;
-      color: var(--muted);
-      font-size: 13px;
-  }
+        /* --- 2. GAYA DASAR --- */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-  .step-icon {
-      width: 40px;
-      height: 40px;
-      line-height: 40px;
-      border-radius: 50%;
-      background: #ccc;
-      color: white;
-      margin: 0 auto 5px;
-      transition: all 0.3s;
-      font-size: 18px;
-  }
+        /* --- 3. HEADER FIXED --- */
+        .header {
+            background-color: var(--blue);
+            color: white;
+            width: 100%;
+            text-align: center;
+            padding: 20px 0;
+            position: fixed;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
 
-  .step.active .step-icon {
-      background: var(--blue);
-      box-shadow: 0 0 0 3px rgba(42, 110, 212, 0.4);
-  }
+        /* --- 4. FORM CONTAINER --- */
+        .form-container {
+            background-color: var(--card);
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px var(--shadow);
+            width: 80%;
+            max-width: 600px; 
+            margin: 90px auto 30px auto; 
+        }
 
-  .step-line {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      right: 50%;
-      height: 2px;
-      background: #ccc;
-      z-index: -1;
-      transition: background 0.3s;
-  }
+        .form-container h2 {
+            text-align: center;
+            color: var(--blue); 
+            margin-bottom: 5px;
+            font-size: 28px;
+            font-weight: 800;
+        }
 
-  .step:not(:last-child) .step-line {
-      right: -50%;
-  }
+        .form-container p.subtitle {
+            text-align: center;
+            color: #555;
+            margin-bottom: 30px;
+            font-size: 15px;
+            border-bottom: 2px dashed #eee;
+            padding-bottom: 15px;
+        }
 
-  .step.active + .step:before {
-      content: '';
-      position: absolute;
-      top: 20px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: var(--blue);
-      z-index: -1;
-  }
-  
-  /* Mechanic Info */
-  .mechanic-info {
-      margin-top: 20px;
-      padding: 15px;
-      border: 1px solid #eee;
-      border-radius: 8px;
-      background: #f8fafc;
-  }
+        /* --- 5. GRUP FORM & INPUT --- */
+        h3 {
+            color: var(--orange);
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--orange);
+            padding-left: 10px;
+            font-size: 18px;
+        }
 
-  .mechanic-info i {
-      color: var(--blue);
-      margin-right: 8px;
-  }
-  
-  .not-found {
-      text-align: center;
-      padding: 40px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  }
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-  /* KOTAK PESAN SUKSES BARU */
-  .welcome-box {
-    text-align: center; 
-    padding: 15px; 
-    background: #d4edda; /* Hijau muda */
-    color: #155724; /* Hijau gelap */
-    border: 1px solid #c3e6cb; 
-    border-radius: 5px; 
-    margin-bottom: 20px;
-  }
-  .welcome-box h2 {
-    margin-top: 0;
-    font-size: 20px;
-  }
-</style>
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-group label i {
+            margin-right: 8px;
+            color: var(--orange);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 5px rgba(42, 110, 212, 0.3);
+            outline: none;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+        }
+
+        /* --- 6. GAYA TOMBOL & TAUTAN --- */
+        .submit-btn {
+            background-color: var(--blue);
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background-color: #1a5ac9;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+        }
+
+        .back-link a {
+            color: var(--blue);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .message-status {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .message-status.success { color: #28a745; }
+        .message-status.error { color: #dc3545; }
+        .message-status.loading { color: var(--orange); }
+    </style>
 </head>
 <body>
-<div class="wrap">
-  
-    <header>
-        <h1><i class="fas fa-motorcycle"></i> Status Pesanan Anda</h1>
-        <p id="ticketIdDisplay" style="font-size: 16px; margin-top: 5px;">ID Tiket: **Memuat...**</p>
-    </header>
 
-    <div id="welcomeMessage" class="welcome-box" style="display:none;">
-        <h2>🎉 Permintaan Berhasil Dibuat!</h2>
-        <p>Terima kasih. ID Tiket Anda sudah aktif. Mekanik terdekat akan segera memproses pesanan ini. Tetap pantau status di halaman ini.</p>
+    <div class="header">
+        <h1><i class="fas fa-motorcycle"></i> Mechajob - Pesan Layanan Motor</h1>
     </div>
 
-    <div id="content" class="card">
-        
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div style="font-size: 20px; font-weight: bold;">Status Saat Ini:</div>
-            <div id="currentStatus">
-                <span class="status-badge pending">MEMUAT</span>
-            </div>
-        </div>
-        
-        <div class="steps-container">
-            <div class="step active" id="step1">
-                <div class="step-icon"><i class="fas fa-file-alt"></i></div>
-                Permintaan Dibuat
-                <div class="step-line"></div>
-            </div>
-            <div class="step" id="step2">
-                <div class="step-icon"><i class="fas fa-tools"></i></div>
-                Proses Pengerjaan
-                <div class="step-line"></div>
-            </div>
-            <div class="step" id="step3">
-                <div class="step-icon"><i class="fas fa-check-circle"></i></div>
-                Selesai / Pembayaran
-            </div>
-        </div>
-        
-        <div class="info-grid">
-            <div class="info-item">
-                <div>Nama Pelanggan</div>
-                <div id="custName">Memuat...</div>
-            </div>
-            <div class="info-item">
-                <div>Kendaraan</div>
-                <div id="vehicleType">Memuat...</div>
-            </div>
-            <div class="info-item">
-                <div>Keluhan Utama</div>
-                <div id="issueDesc">Memuat...</div>
-            </div>
-            <div class="info-item">
-                <div>Waktu Permintaan</div>
-                <div id="createTime">Memuat...</div>
-            </div>
-            <div class="info-item" id="mechanicDiv">
-                <div>Mekanik Penanggung Jawab</div>
-                <div id="mechanicName">Menunggu klaim...</div>
-            </div>
-            <div class="info-item" id="totalDiv" style="display: none;">
-                <div>**TOTAL BIAYA**</div>
-                <div id="totalCost" style="color: var(--danger);">Memuat...</div>
-            </div>
-        </div>
+    <div class="form-container">
+        <h2>Pesan Perbaikan Motor</h2>
+        <p class="subtitle">Isi detail di bawah untuk menghubungkan Anda dengan mekanik terdekat.</p>
 
-        <div class="mechanic-info" id="mechanicDetails" style="display: none;">
-            <div style="font-weight: bold; margin-bottom: 10px; color: var(--blue);"><i class="fas fa-id-badge"></i> Kontak Mekanik Anda:</div>
-            <p style="margin: 5px 0;"><i class="fas fa-user-cog"></i> **Nama Bengkel:** <span id="mShopName"></span></p>
-            <p style="margin: 5px 0;"><i class="fab fa-whatsapp"></i> **WhatsApp:** <span id="mShopWA"></span></p>
-        </div>
+        <form id="orderForm">
 
+            <h3><i class="fas fa-user"></i> Detail Kontak Anda</h3>
+
+            <div class="form-group">
+                <label for="nama"><i class="fas fa-id-card"></i> Nama Pelanggan</label>
+                <input type="text" id="nama" name="custName" required placeholder="Nama Anda (Sesuai KTP)">
+            </div>
+
+            <div class="form-group">
+                <label for="telepon"><i class="fas fa-phone-alt"></i> Nomor WhatsApp (Cth: 6281xxxxxx)</label>
+                <input type="tel" id="telepon" name="custWa" required placeholder="Cth: 6281234567890">
+            </div>
+
+            <h3><i class="fas fa-motorcycle"></i> Detail Kendaraan</h3>
+
+            <div class="form-group">
+                <label for="merk"><i class="fas fa-tag"></i> Merk dan Tipe Motor</label>
+                <input type="text" id="merk" name="vehicleModel" required placeholder="Cth: Honda Beat 2020 atau Yamaha NMAX">
+            </div>
+
+            <div class="form-group">
+                <label for="jenis_motor"><i class="fas fa-cogs"></i> Jenis Motor</label>
+                <select id="jenis_motor" name="vehicleType" required>
+                    <option value="">Pilih Kategori Motor</option>
+                    <option value="matic">Skuter Matic (Vario, Beat, NMAX, dll)</option>
+                    <option value="bebek">Motor Bebek (Supra, Jupiter, dll)</option>
+                    <option value="sport">Motor Sport (Ninja, R15, CBR, dll)</option>
+                    <option value="lainnya">Lainnya / Klasik</option>
+                </select>
+            </div>
+
+            <h3><i class="fas fa-map-marker-alt"></i> Masalah & Lokasi</h3>
+
+            <div class="form-group">
+                <label for="masalah"><i class="fas fa-question-circle"></i> Masalah Utama (Pilih yang paling sesuai)</label>
+                <select id="masalah" name="issueType" required>
+                    <option value="">Pilih Masalah Utama</option>
+                    <option value="mogok">Motor Mogok / Tidak Bisa Hidup</option>
+                    <option value="ban_bocor">Ban Bocor / Pecah</option>
+                    <option value="kelistrikan">Masalah Kelistrikan (Lampu, Aki, dll)</option>
+                    <option value="rem">Masalah Rem / Kopling</option>
+                    <option value="tuneup">Perawatan Rutin / Ganti Oli</option>
+                    <option value="lainnya">Masalah Lainnya</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="deskripsi"><i class="fas fa-comment-dots"></i> Deskripsi Masalah Lebih Lanjut</label>
+                <textarea id="deskripsi" name="issueDesc" rows="4" required 
+                    placeholder="Contoh: Motor tidak mau distarter setelah kehujanan. Suara mesin kasar. Sebutkan juga kapan terakhir diservis."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="lokasi"><i class="fas fa-street-view"></i> Alamat Lengkap / Lokasi Anda Sekarang</label>
+                <input type="text" id="lokasi" name="location" required placeholder="Cth: Jl. Anggrek No. 12, Samping Indomaret atau di Kantor, Lantai 5.">
+            </div>
+
+
+            <button type="submit" class="submit-btn" id="submitButton">
+                <i class="fas fa-search"></i> Cari Mekanik Terdekat Sekarang!
+            </button>
+        </form>
+
+        <p id="message" class="message-status"></p>
+
+        <p class="back-link"><a href="login-customer.html"><i class="fas fa-arrow-left"></i> Cek Status Pesanan Saya</a></p>
     </div>
-
-    <div id="notFound" class="not-found" style="display: none;">
-        <h2><i class="fas fa-exclamation-triangle"></i> Tiket Tidak Ditemukan</h2>
-        <p>ID Tiket yang Anda masukkan tidak valid atau belum terdaftar. Mohon periksa kembali ID tiket Anda.</p>
-        <a href="login-customer.html" style="background: var(--blue); color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block; margin-top: 15px;">Coba Lagi</a>
-    </div>
-
-</div>
 
 <script type="module">
-// =========================================================
-// 1. KONFIGURASI DAN IMPOR FIREBASE
-// =========================================================
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { 
-    getFirestore, 
-    doc, 
-    onSnapshot,
-    getDoc 
-} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; 
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; 
 
-// GANTI DENGAN KONFIGURASI FIREBASE ANDA YANG SEBENARNYA
-const firebaseConfig = {
+    // GANTI DENGAN KONFIGURASI FIREBASE ANDA YANG SEBENARNYA
+    const firebaseConfig = {
     apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
     authDomain: "mechajob-b7360.firebaseapp.com",
     projectId: "mechajob-b7360",
@@ -261,163 +260,62 @@ const firebaseConfig = {
     messagingSenderId: "753002885541",
     appId: "1:753002885541:web:96e4964dbd300193ff384c",
     measurementId: "G-ZY3RS8WGP7"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// Helper function untuk format mata uang
-function formatCurrency(number) {
-    if (number === 0 || number === undefined || number === null) return '0';
-    return number.toLocaleString('id-ID');
-}
-
-// =========================================================
-// 2. LOGIKA UTAMA (GET TICKET ID & SETUP LISTENER)
-// =========================================================
-
-const urlParams = new URLSearchParams(window.location.search);
-const ticketId = urlParams.get('ticketId'); // Mengambil parameter 'ticketId' dari URL
-const isNewOrder = urlParams.get('new') === 'true'; // Cek flag 'new=true'
-
-if (isNewOrder) {
-    // Tampilkan pesan selamat datang
-    document.getElementById('welcomeMessage').style.display = 'block';
-    
-    // Opsional: Bersihkan URL agar pesan tidak muncul saat refresh
-    if (window.history.replaceState) {
-        let cleanUrl = window.location.href;
-        cleanUrl = cleanUrl.replace('&new=true', '');
-        window.history.replaceState(null, null, cleanUrl);
-    }
-}
-
-if (!ticketId) {
-    // Jika tidak ada ID tiket, tampilkan not found
-    document.getElementById('content').style.display = 'none';
-    document.getElementById('notFound').style.display = 'block';
-    document.getElementById('notFound').querySelector('h2').textContent = "Tidak Ada ID Tiket";
-    document.getElementById('notFound').querySelector('p').textContent = "Anda harus memasukkan ID Tiket untuk melihat status pesanan.";
-} else {
-    // Tampilkan ID Tiket di header
-    document.getElementById("ticketIdDisplay").textContent = `ID Tiket: **${ticketId}**`;
-    setupOrderListener(ticketId);
-}
-
-// =========================================================
-// 3. FUNGSI REAL-TIME LISTENER (Mendengarkan dokumen spesifik)
-// =========================================================
-
-function setupOrderListener(id) {
-    // Mengambil referensi dokumen langsung menggunakan ID dokumen
-    const orderRef = doc(db, "new_orders", id);
-
-    // Mendengarkan perubahan data secara real-time pada dokumen tunggal
-    onSnapshot(orderRef, (docSnap) => {
-        if (docSnap.exists()) {
-            // Data ditemukan
-            document.getElementById('content').style.display = 'block';
-            document.getElementById('notFound').style.display = 'none';
-            renderStatus(docSnap.data());
-        } else {
-            // Data tidak ditemukan
-            document.getElementById('content').style.display = 'none';
-            document.getElementById('notFound').style.display = 'block';
-            document.getElementById('welcomeMessage').style.display = 'none'; // Sembunyikan pesan jika tiket hilang
-        }
-    }, (error) => {
-        console.error("Gagal mendengarkan pesanan:", error);
-        alert("Terjadi kesalahan koneksi ke server. Coba muat ulang halaman.");
-        document.getElementById('content').style.display = 'none';
-        document.getElementById('notFound').style.display = 'block';
-        document.getElementById('welcomeMessage').style.display = 'none';
-    });
-}
-
-// =========================================================
-// 4. FUNGSI RENDER DASHBOARD
-// =========================================================
-
-async function renderStatus(data) {
-    const status = data.status || 'pending';
-    const statusDisplay = document.getElementById('currentStatus');
-    const steps = document.querySelectorAll('.step');
-    
-    // 4a. Update Status Badge & Steps
-    const statusClass = status.toLowerCase().replace('-', '');
-    const statusTextMap = {
-        'pending': 'MENUNGGU MEKANIK',
-        'in-progress': 'SEDANG DIKERJAKAN',
-        'selesai': 'SELESAI (MENUNGGU PEMBAYARAN)',
-        'dibatalkan': 'DIBATALKAN'
     };
-    
-    statusDisplay.innerHTML = `<span class="status-badge ${statusClass}">${statusTextMap[status] || status.toUpperCase()}</span>`;
 
-    // Reset dan atur Step Indicator
-    steps.forEach(step => step.classList.remove('active'));
-    document.getElementById('step1').classList.add('active'); // Selalu aktif
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const orderForm = document.getElementById('orderForm');
+    const messageElement = document.getElementById('message');
+    const submitButton = document.getElementById('submitButton');
 
-    if (status === 'in-progress' || status === 'selesai') {
-        document.getElementById('step2').classList.add('active');
-    }
-    if (status === 'selesai') {
-        document.getElementById('step3').classList.add('active');
-    }
+    orderForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
 
-    // 4b. Update Detail Pesanan
-    document.getElementById('custName').textContent = data.custName || 'N/A';
-    // Menggabungkan Tipe dan Model Kendaraan
-    document.getElementById('vehicleType').textContent = `${data.vehicleModel} (${data.vehicleType})` || 'N/A'; 
-    document.getElementById('issueDesc').textContent = data.issueDesc || 'N/A';
-    
-    let createTime = 'N/A';
-    if (data.createdAt && data.createdAt.toDate) {
-        const date = data.createdAt.toDate();
-        createTime = date.toLocaleDateString('id-ID') + ' ' + date.toLocaleTimeString('id-ID');
-    }
-    document.getElementById('createTime').textContent = createTime;
-    
-    // 4c. Update Detail Mekanik
-    const mechanicDiv = document.getElementById('mechanicDetails');
-    const mechanicNameDisplay = document.getElementById('mechanicName');
-    
-    if (data.mekanikId) {
-        mechanicNameDisplay.textContent = data.mekanikName || 'Memuat detail mekanik...';
-        mechanicDiv.style.display = 'block';
-        
-        // Ambil detail WA dari koleksi mekanik_users
+        // Nonaktifkan tombol dan tampilkan status loading
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sedang Mencari...';
+        messageElement.className = "message-status loading";
+        messageElement.textContent = "Mengirim pesanan ke server dan mencari mekanik terdekat...";
+
         try {
-            const mechanicDocRef = doc(db, "mekanik_users", data.mekanikId);
-            const mechanicSnap = await getDoc(mechanicDocRef);
-            
-            if (mechanicSnap.exists()) {
-                const mData = mechanicSnap.data();
-                document.getElementById('mechanicName').textContent = mData.shopName || mData.mechanicName || 'Mekanik Klaim';
-                document.getElementById('mShopName').textContent = mData.shopName || 'Nama Bengkel Tidak Ditemukan';
-                document.getElementById('mShopWA').textContent = mData.shopWA || 'N/A';
-            } else {
-                document.getElementById('mShopName').textContent = 'Detail Bengkel Tidak Ditemukan';
-                document.getElementById('mShopWA').textContent = 'N/A';
-            }
+            const formData = new FormData(orderForm);
+
+            // Siapkan data untuk dikirim ke Firestore
+            const newOrderData = {
+                custName: formData.get('custName'),
+                custWa: formData.get('custWa'),
+                vehicleType: formData.get('vehicleType'), // matic, bebek, sport
+                vehicleModel: formData.get('vehicleModel'), // Honda Beat 2020
+                issueType: formData.get('issueType'), // mogok, ban_bocor, dll
+                issueDesc: formData.get('issueDesc'),
+                location: formData.get('location'),
+                status: 'pending', // Status awal
+                mekanikId: null,   // Belum diklaim
+                total: 0,          // Biaya awal
+                createdAt: serverTimestamp()
+            };
+
+            // Tambahkan dokumen ke koleksi 'new_orders'
+            const docRef = await addDoc(collection(db, "new_orders"), newOrderData);
+
+            messageElement.className = "message-status success";
+            messageElement.textContent = `Pesanan berhasil! ID Tiket Anda: ${docRef.id}. Anda akan dialihkan...`;
+
+            // Redirect ke halaman status dengan ID tiket
+            setTimeout(() => {
+                window.location.href = `dashboard-customer.html?ticketId=${docRef.id}`;
+            }, 3000);
+
         } catch (e) {
-            console.error("Gagal mengambil detail mekanik:", e);
+            console.error("Gagal menambahkan dokumen:", e);
+
+            // Aktifkan kembali tombol dan tampilkan pesan error
+            submitButton.disabled = false;
+            submitButton.innerHTML = '<i class="fas fa-search"></i> Cari Mekanik Terdekat Sekarang!';
+            messageElement.className = "message-status error";
+            messageElement.textContent = "Gagal mengirim pesanan. Cek konfigurasi dan Aturan Firebase Anda.";
         }
-
-    } else {
-        mechanicNameDisplay.textContent = 'Menunggu Mekanik mengklaim pesanan.';
-        mechanicDiv.style.display = 'none';
-    }
-
-    // 4d. Update Total Biaya
-    const totalDiv = document.getElementById('totalDiv');
-    if (status === 'selesai' && data.total > 0) {
-        totalDiv.style.display = 'block';
-        document.getElementById('totalCost').textContent = `Rp ${formatCurrency(data.total)}`;
-    } else {
-        totalDiv.style.display = 'none';
-    }
-}
+    });
 </script>
 </body>
 </html>
