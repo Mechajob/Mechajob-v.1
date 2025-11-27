@@ -16,11 +16,11 @@
     --success:#28a745; 
     --danger:#dc3545;
   }
-  
+
   *{box-sizing:border-box}
   body{font-family:Arial,sans-serif;margin:0;background:var(--bg);color:#111; padding: 20px;}
   .wrap{max-width:800px;margin:20px auto;}
-  
+
   /* Header */
   header{
     text-align: center;
@@ -30,10 +30,10 @@
     border-radius: 10px 10px 0 0;
   }
   header h1{margin:0;font-size:24px;}
-  
+
   /* Status Card */
   .card{background:var(--card);padding:25px;border-radius:0 0 10px 10px;box-shadow:0 6px 20px rgba(10,10,20,0.1); margin-bottom: 20px;}
-  
+
   /* Info Grid */
   .info-grid{
     display: grid;
@@ -45,7 +45,7 @@
   }
   .info-item div:first-child{color:var(--muted);font-size:13px; margin-bottom: 4px;}
   .info-item div:last-child{font-weight: bold; font-size: 16px;}
-  
+
   /* Status Badge */
   .status-badge{
     display: inline-block;
@@ -119,7 +119,7 @@
       background: var(--blue);
       z-index: -1;
   }
-  
+
   /* Mechanic Info */
   .mechanic-info {
       margin-top: 20px;
@@ -133,7 +133,7 @@
       color: var(--blue);
       margin-right: 8px;
   }
-  
+
   .not-found {
       text-align: center;
       padding: 40px;
@@ -141,11 +141,30 @@
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.05);
   }
+
+  /* Tombol Pembayaran Baru */
+  #paymentButton {
+      background-color: var(--success);
+      color: white;
+      padding: 15px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+      display: none; /* Default hidden */
+      transition: background-color 0.3s;
+  }
+  #paymentButton:hover {
+      background-color: #1e7e34;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  
+
     <header>
         <h1><i class="fas fa-motorcycle"></i> Status Pesanan Anda</h1>
         <p id="ticketIdDisplay" style="font-size: 16px; margin-top: 5px;">ID Tiket: **Memuat...**</p>
@@ -159,7 +178,7 @@
                 <span class="status-badge pending">MEMUAT</span>
             </div>
         </div>
-        
+
         <div class="steps-container">
             <div class="step active" id="step1">
                 <div class="step-icon"><i class="fas fa-file-alt"></i></div>
@@ -176,7 +195,7 @@
                 Selesai / Pembayaran
             </div>
         </div>
-        
+
         <div class="info-grid">
             <div class="info-item">
                 <div>Nama Pelanggan</div>
@@ -209,6 +228,10 @@
             <p style="margin: 5px 0;"><i class="fas fa-user-cog"></i> **Nama Bengkel:** <span id="mShopName"></span></p>
             <p style="margin: 5px 0;"><i class="fab fa-whatsapp"></i> **WhatsApp:** <span id="mShopWA"></span></p>
         </div>
+        
+        <button id="paymentButton" style="display: none;">
+            <i class="fas fa-money-bill-wave"></i> Bayar Sekarang (Total: <span id="paymentTotalDisplay">Rp 0</span>)
+        </button>
 
     </div>
 
@@ -246,9 +269,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// Global state untuk menyimpan data order dan mekanik saat ini
+let currentOrderData = null;
+let currentMechanicWA = null; 
+
 // Helper function untuk format mata uang
 function formatCurrency(number) {
-    if (number === 0 || number === undefined || number === null) return '0';
+    if (number === 0 || number === undefined || number === null) return 0;
     return number.toLocaleString('id-ID');
 }
 
@@ -257,37 +284,34 @@ function formatCurrency(number) {
 // =========================================================
 
 const urlParams = new URLSearchParams(window.location.search);
-const ticketId = urlParams.get('ticketId'); // Mengambil parameter 'ticketId' dari URL
+const ticketId = urlParams.get('ticketId'); 
+const paymentButton = document.getElementById('paymentButton');
 
 if (!ticketId) {
-    // Jika tidak ada ID tiket, tampilkan not found
     document.getElementById('content').style.display = 'none';
     document.getElementById('notFound').style.display = 'block';
     document.getElementById('notFound').querySelector('h2').textContent = "Tidak Ada ID Tiket";
     document.getElementById('notFound').querySelector('p').textContent = "Anda harus memasukkan ID Tiket untuk melihat status pesanan.";
 } else {
-    // Tampilkan ID Tiket di header
     document.getElementById("ticketIdDisplay").textContent = `ID Tiket: **${ticketId}**`;
     setupOrderListener(ticketId);
 }
 
 // =========================================================
-// 3. FUNGSI REAL-TIME LISTENER (Mendengarkan dokumen spesifik)
+// 3. FUNGSI REAL-TIME LISTENER & RENDER
 // =========================================================
 
 function setupOrderListener(id) {
-    // Mengambil referensi dokumen langsung menggunakan ID dokumen
     const orderRef = doc(db, "new_orders", id);
 
-    // Mendengarkan perubahan data secara real-time pada dokumen tunggal
     onSnapshot(orderRef, (docSnap) => {
         if (docSnap.exists()) {
-            // Data ditemukan
             document.getElementById('content').style.display = 'block';
             document.getElementById('notFound').style.display = 'none';
-            renderStatus(docSnap.data());
+            
+            currentOrderData = docSnap.data(); // Simpan data global
+            renderStatus(currentOrderData, id); // Kirim ID juga untuk tombol
         } else {
-            // Data tidak ditemukan
             document.getElementById('content').style.display = 'none';
             document.getElementById('notFound').style.display = 'block';
         }
@@ -299,15 +323,11 @@ function setupOrderListener(id) {
     });
 }
 
-// =========================================================
-// 4. FUNGSI RENDER DASHBOARD
-// =========================================================
-
-async function renderStatus(data) {
+async function renderStatus(data, ticketId) {
     const status = data.status || 'pending';
     const statusDisplay = document.getElementById('currentStatus');
     const steps = document.querySelectorAll('.step');
-    
+
     // 4a. Update Status Badge & Steps
     const statusClass = status.toLowerCase().replace('-', '');
     const statusTextMap = {
@@ -316,13 +336,10 @@ async function renderStatus(data) {
         'selesai': 'SELESAI (MENUNGGU PEMBAYARAN)',
         'dibatalkan': 'DIBATALKAN'
     };
-    
     statusDisplay.innerHTML = `<span class="status-badge ${statusClass}">${statusTextMap[status] || status.toUpperCase()}</span>`;
-
-    // Reset dan atur Step Indicator
+    
     steps.forEach(step => step.classList.remove('active'));
-    document.getElementById('step1').classList.add('active'); // Selalu aktif
-
+    document.getElementById('step1').classList.add('active'); 
     if (status === 'in-progress' || status === 'selesai') {
         document.getElementById('step2').classList.add('active');
     }
@@ -332,33 +349,35 @@ async function renderStatus(data) {
 
     // 4b. Update Detail Pesanan
     document.getElementById('custName').textContent = data.custName || 'N/A';
-    document.getElementById('vehicleType').textContent = data.vehicle || `${data.vehicleType} ${data.vehicleModel}` || 'N/A';
-    document.getElementById('issueDesc').textContent = data.issueType || data.issueDesc || 'N/A';
-    
+    document.getElementById('vehicleType').textContent = `${data.vehicleModel || 'N/A'} (${data.vehicleType || 'N/A'})`;
+    document.getElementById('issueDesc').textContent = data.issueDesc || 'N/A';
+
     let createTime = 'N/A';
     if (data.createdAt && data.createdAt.toDate) {
         const date = data.createdAt.toDate();
         createTime = date.toLocaleDateString('id-ID') + ' ' + date.toLocaleTimeString('id-ID');
     }
     document.getElementById('createTime').textContent = createTime;
-    
-    // 4c. Update Detail Mekanik
+
+    // 4c. Update Detail Mekanik & Kontak
     const mechanicDiv = document.getElementById('mechanicDetails');
     const mechanicNameDisplay = document.getElementById('mechanicName');
-    
+    currentMechanicWA = null; // Reset WA
+
     if (data.mekanikId) {
-        mechanicNameDisplay.textContent = data.mekanikName || 'Mekanik Tidak Dikenal';
+        mechanicNameDisplay.textContent = data.mekanikName || 'Memuat detail mekanik...';
         mechanicDiv.style.display = 'block';
-        
+
         // Ambil detail WA dari koleksi mekanik_users
         try {
             const mechanicDocRef = doc(db, "mekanik_users", data.mekanikId);
             const mechanicSnap = await getDoc(mechanicDocRef);
-            
+
             if (mechanicSnap.exists()) {
                 const mData = mechanicSnap.data();
                 document.getElementById('mShopName').textContent = mData.shopName || 'Nama Bengkel Tidak Ditemukan';
                 document.getElementById('mShopWA').textContent = mData.shopWA || 'N/A';
+                currentMechanicWA = mData.shopWA; // Simpan WA mekanik
             } else {
                 document.getElementById('mShopName').textContent = 'Detail Bengkel Tidak Ditemukan';
                 document.getElementById('mShopWA').textContent = 'N/A';
@@ -372,15 +391,43 @@ async function renderStatus(data) {
         mechanicDiv.style.display = 'none';
     }
 
-    // 4d. Update Total Biaya
+    // 4d. Update Total Biaya & Tombol Bayar
     const totalDiv = document.getElementById('totalDiv');
-    if (status === 'selesai') {
+    const totalCost = data.total || 0;
+    
+    if (status === 'selesai' && totalCost > 0) {
         totalDiv.style.display = 'block';
-        document.getElementById('totalCost').textContent = `Rp ${formatCurrency(data.total)}`;
+        document.getElementById('totalCost').textContent = `Rp ${formatCurrency(totalCost)}`;
+        
+        // Tampilkan tombol bayar
+        document.getElementById('paymentTotalDisplay').textContent = `Rp ${formatCurrency(totalCost)}`;
+        paymentButton.style.display = 'block';
     } else {
         totalDiv.style.display = 'none';
+        paymentButton.style.display = 'none';
     }
 }
+
+// =========================================================
+// 5. LOGIKA TOMBOL PEMBAYARAN
+// =========================================================
+paymentButton.addEventListener('click', () => {
+    if (currentMechanicWA && currentOrderData && currentOrderData.total > 0 && ticketId) {
+        
+        const waNumber = currentMechanicWA.startsWith('62') ? currentMechanicWA : `62${currentMechanicWA.substring(1)}`;
+        const totalFormatted = `Rp ${formatCurrency(currentOrderData.total)}`;
+        
+        const message = encodeURIComponent(
+            `Halo, saya ingin melakukan pembayaran untuk pesanan servis motor dengan ID Tiket *${ticketId}* atas nama *${currentOrderData.custName}*. Total biaya adalah ${totalFormatted}.` +
+            `\n\nMohon kirimkan detail pembayaran (rekening bank/QRIS). Terima kasih.`
+        );
+
+        window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
+        
+    } else {
+        alert("Gagal memproses pembayaran. Detail Mekanik atau Total Biaya belum lengkap.");
+    }
+});
 </script>
 </body>
 </html>
