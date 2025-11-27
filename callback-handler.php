@@ -1,6 +1,6 @@
 <?php
 // --- SIMULASI MENGAMBIL VARIABEL LINGKUNGAN ---
-$apiKey = '9a8b7c6d5e4f3g2h1i0j'; 
+$apiKey = '6402386a69d598d6bce8f7603c95e7bb'; 
 
 // --- 1. BACA DATA CALLBACK DARI DUITKU ---
 $data_json = file_get_contents('php://input');
