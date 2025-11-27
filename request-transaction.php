@@ -1,8 +1,8 @@
 <?php
 // --- SIMULASI MENGAMBIL VARIABEL LINGKUNGAN ---
-$merchantCode = 'D99999'; 
-$apiKey = '9a8b7c6d5e4f3g2h1i0j'; 
-$serverUrl = 'https://api.mechajob.com'; 
+$merchantCode = 'DS26353'; 
+$apiKey = '6402386a69d598d6bce8f7603c95e7bb'; 
+$serverUrl = 'https://mechajob.github.io/Mechajob-v.1/'; 
 $duitkuApiBase = 'https://sandbox.duitku.com/webapi/api';
 
 // --- DATA TRANSAKSI (Asumsi diterima dari request POST aplikasi mobile) ---
@@ -27,8 +27,8 @@ $data_request = [
     'productDetails' => $productDetails,
     'email' => $customerEmail,
     'customerVaName' => $customerName,
-    'returnUrl' => $serverUrl . '/return_handler.php?order=' . $orderId, // URL kembali ke app
-    'callbackUrl' => $serverUrl . '/callback_handler.php', // URL notifikasi status
+    'returnUrl' => $serverUrl . '/return-handler.php?order=' . $orderId, // URL kembali ke app
+    'callbackUrl' => $serverUrl . '/callback-handler.php', // URL notifikasi status
     'signature' => $signature,
     'expiryPeriod' => 10, // 10 menit
     'paymentMethod' => $paymentMethod
