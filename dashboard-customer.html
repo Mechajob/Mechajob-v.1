@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Status Orderan Anda - Mechajob</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Midtrans SNAP (Production / Sandbox) -->
+<script type="text/javascript"
+    src="https://app.midtrans.com/snap/snap.js"
+    data-client-key="Midtrans-Client-Key-Anda-Disni"></script> <!-- GANTI DENGAN CLIENT KEY ANDA -->
 
 <style>
   :root{
@@ -18,10 +22,9 @@
   }
 
   *{box-sizing:border-box}
-  body{font-family:Arial,sans-serif;margin:0;background:var(--bg);color:#111; padding: 20px;}
+  body{font-family:Arial,sans-serif;margin:0;background:var(--bg);color:#111; padding:20px;}
   .wrap{max-width:800px;margin:20px auto;}
 
-  /* Header */
   header{
     text-align: center;
     padding: 20px;
@@ -31,10 +34,8 @@
   }
   header h1{margin:0;font-size:24px;}
 
-  /* Status Card */
   .card{background:var(--card);padding:25px;border-radius:0 0 10px 10px;box-shadow:0 6px 20px rgba(10,10,20,0.1); margin-bottom: 20px;}
 
-  /* Info Grid */
   .info-grid{
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -46,7 +47,6 @@
   .info-item div:first-child{color:var(--muted);font-size:13px; margin-bottom: 4px;}
   .info-item div:last-child{font-weight: bold; font-size: 16px;}
 
-  /* Status Badge */
   .status-badge{
     display: inline-block;
     padding: 8px 15px;
@@ -59,112 +59,39 @@
   .status-badge.pending{background: var(--orange);}
   .status-badge.in-progress{background: var(--blue);}
   .status-badge.selesai{background: var(--success);}
-  .status-badge.lunas{background: var(--success);} /* LUNAS juga hijau */
+  .status-badge.lunas{background: var(--success);}
   .status-badge.dibatalkan{background: var(--danger);}
 
-  /* Step Indicator */
   .steps-container {
       display: flex;
       justify-content: space-between;
       margin-top: 25px;
       padding: 0 10px;
   }
-
-  .step {
-      text-align: center;
-      flex-grow: 1;
-      position: relative;
-      color: var(--muted);
-      font-size: 13px;
-  }
-
+  .step {text-align: center;flex-grow: 1;position: relative;color: var(--muted);font-size: 13px;}
   .step-icon {
-      width: 40px;
-      height: 40px;
-      line-height: 40px;
-      border-radius: 50%;
-      background: #ccc;
-      color: white;
-      margin: 0 auto 5px;
-      transition: all 0.3s;
-      font-size: 18px;
+      width: 40px;height: 40px;line-height: 40px;border-radius: 50%;background: #ccc;color: white;
+      margin: 0 auto 5px;font-size: 18px;transition: all 0.3s;
   }
+  .step.active .step-icon {background: var(--blue);box-shadow: 0 0 0 3px rgba(42, 110, 212, 0.4);}
+  .step-line {position: absolute;top: 20px;left: 50%;right: 50%;height: 2px;background: #ccc;z-index: -1;}
+  .step:not(:last-child) .step-line {right: -50%;}
+  .step.active + .step:before {content: '';position: absolute;top: 20px;left: 0;width: 100%;height: 2px;background: var(--blue);z-index: -1;}
 
-  .step.active .step-icon {
-      background: var(--blue);
-      box-shadow: 0 0 0 3px rgba(42, 110, 212, 0.4);
-  }
+  .mechanic-info {margin-top: 20px;padding: 15px;border: 1px solid #eee;border-radius: 8px;background: #f8fafc;}
+  .mechanic-info i {color: var(--blue);margin-right: 8px;}
 
-  .step-line {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      right: 50%;
-      height: 2px;
-      background: #ccc;
-      z-index: -1;
-      transition: background 0.3s;
-  }
+  .not-found {text-align: center;padding: 40px;background: #fff;border-radius: 10px;box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
 
-  .step:not(:last-child) .step-line {
-      right: -50%;
+  button.payment-btn {
+      padding: 15px 20px;border: none;border-radius: 8px;font-size: 18px;font-weight: bold;
+      cursor: pointer;width: 100%;margin-top: 12px;color: white;transition: 0.3s;
   }
-
-  .step.active + .step:before {
-      content: '';
-      position: absolute;
-      top: 20px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: var(--blue);
-      z-index: -1;
-  }
-
-  /* Mechanic Info */
-  .mechanic-info {
-      margin-top: 20px;
-      padding: 15px;
-      border: 1px solid #eee;
-      border-radius: 8px;
-      background: #f8fafc;
-  }
-
-  .mechanic-info i {
-      color: var(--blue);
-      margin-right: 8px;
-  }
-
-  .not-found {
-      text-align: center;
-      padding: 40px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  }
-
-  /* Tombol Pembayaran Baru */
-  #paymentButton {
-      background-color: var(--success);
-      color: white;
-      padding: 15px 20px;
-      border: none;
-      border-radius: 8px;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 20px;
-      display: none; /* Default hidden */
-      transition: background-color 0.3s;
-  }
-  #paymentButton:hover:not(:disabled) {
-      background-color: #1e7e34;
-  }
-  #paymentButton:disabled {
-    cursor: not-allowed;
-    opacity: 0.8;
-  }
+  #payOnlineBtn {background: var(--blue);}
+  #payOnlineBtn:hover {background: #1e5bb8;}
+  #payManualBtn {background: var(--orange);}
+  #payManualBtn:hover {background: #e68a00;}
+  button:disabled {opacity: 0.7;cursor: not-allowed;}
 </style>
 </head>
 <body>
@@ -172,326 +99,213 @@
 
     <header>
         <h1><i class="fas fa-motorcycle"></i> Status Pesanan Anda</h1>
-        <p id="ticketIdDisplay" style="font-size: 16px; margin-top: 5px;">ID Tiket: **Memuat...**</p>
+        <p id="ticketIdDisplay" style="font-size:16px;margin-top:5px;">ID Tiket: **Memuat...**</p>
     </header>
 
     <div id="content" class="card">
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div style="font-size: 20px; font-weight: bold;">Status Saat Ini:</div>
-            <div id="currentStatus">
-                <span class="status-badge pending">MEMUAT</span>
-            </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <div style="font-size:20px;font-weight:bold;">Status Saat Ini:</div>
+            <div id="currentStatus"><span class="status-badge pending">MEMUAT</span></div>
         </div>
 
         <div class="steps-container">
-            <div class="step active" id="step1">
-                <div class="step-icon"><i class="fas fa-file-alt"></i></div>
-                Permintaan Dibuat
-                <div class="step-line"></div>
-            </div>
-            <div class="step" id="step2">
-                <div class="step-icon"><i class="fas fa-tools"></i></div>
-                Proses Pengerjaan
-                <div class="step-line"></div>
-            </div>
-            <div class="step" id="step3">
-                <div class="step-icon"><i class="fas fa-check-circle"></i></div>
-                Selesai / Pembayaran
-            </div>
+            <div class="step active" id="step1"><div class="step-icon"><i class="fas fa-file-alt"></i></div>Permintaan Dibuat<div class="step-line"></div></div>
+            <div class="step" id="step2"><div class="step-icon"><i class="fas fa-tools"></i></div>Proses Pengerjaan<div class="step-line"></div></div>
+            <div class="step" id="step3"><div class="step-icon"><i class="fas fa-check-circle"></i></div>Selesai / Pembayaran</div>
         </div>
 
         <div class="info-grid">
-            <div class="info-item">
-                <div>Nama Pelanggan</div>
-                <div id="custName">Memuat...</div>
-            </div>
-            <div class="info-item">
-                <div>Kendaraan</div>
-                <div id="vehicleType">Memuat...</div>
-            </div>
-            <div class="info-item">
-                <div>Keluhan Utama</div>
-                <div id="issueDesc">Memuat...</div>
-            </div>
-            <div class="info-item">
-                <div>Waktu Permintaan</div>
-                <div id="createTime">Memuat...</div>
-            </div>
-            <div class="info-item" id="mechanicDiv">
-                <div>Mekanik Penanggung Jawab</div>
-                <div id="mechanicName">Menunggu klaim...</div>
-            </div>
-            <div class="info-item" id="totalDiv" style="display: none;">
-                <div>**TOTAL BIAYA**</div>
-                <div id="totalCost" style="color: var(--danger);">Memuat...</div>
-            </div>
+            <div class="info-item"><div>Nama Pelanggan</div><div id="custName">Memuat...</div></div>
+            <div class="info-item"><div>Kendaraan</div><div id="vehicleType">Memuat...</div></div>
+            <div class="info-item"><div>Keluhan Utama</div><div id="issueDesc">Memuat...</div></div>
+            <div class="info-item"><div>Waktu Permintaan</div><div id="createTime">Memuat...</div></div>
+            <div class="info-item" id="mechanicDiv"><div>Mekanik Penanggung Jawab</div><div id="mechanicName">Menunggu klaim...</div></div>
+            <div class="info-item" id="totalDiv" style="display:none;"><div><strong>TOTAL BIAYA</strong></div><div id="totalCost" style="color:var(--danger);font-size:20px;">Memuat...</div></div>
         </div>
 
-        <div class="mechanic-info" id="mechanicDetails" style="display: none;">
-            <div style="font-weight: bold; margin-bottom: 10px; color: var(--blue);"><i class="fas fa-id-badge"></i> Kontak Mekanik Anda:</div>
-            <p style="margin: 5px 0;"><i class="fas fa-user-cog"></i> **Nama Bengkel:** <span id="mShopName"></span></p>
-            <p style="margin: 5px 0;"><i class="fab fa-whatsapp"></i> **WhatsApp:** <span id="mShopWA"></span></p>
+        <div class="mechanic-info" id="mechanicDetails" style="display:none;">
+            <div style="font-weight:bold;margin-bottom:10px;color:var(--blue);"><i class="fas fa-id-badge"></i> Kontak Mekanik Anda:</div>
+            <p style="margin:5px 0;"><i class="fas fa-user-cog"></i> <strong>Nama Bengkel:</strong> <span id="mShopName"></span></p>
+            <p style="margin:5px 0;"><i class="fab fa-whatsapp"></i> <strong>WhatsApp:</strong> <span id="mShopWA"></span></p>
         </div>
 
-        <button id="paymentButton" style="display: none;">
-            <i class="fas fa-money-bill-wave"></i> Bayar Sekarang (Total: <span id="paymentTotalDisplay">Rp 0</span>)
-        </button>
+        <!-- Tombol Pembayaran -->
+        <div id="paymentButtons" style="display:none;margin-top:20px;">
+            <button id="payOnlineBtn" class="payment-btn">
+                <i class="fas fa-credit-card"></i> Bayar Sekarang via QRIS / Transfer / E-Wallet
+            </button>
+            <button id="payManualBtn" class="payment-btn">
+                <i class="fas fa-money-bill-wave"></i> Saya Sudah Bayar Tunai / Transfer Manual
+            </button>
+        </div>
 
+        <div id="lunasInfo" style="display:none;text-align:center;padding:20px;background:#d4edda;border-radius:8px;color:#155724;font-size:18px;font-weight:bold;">
+            <i class="fas fa-check-double" style="font-size:36px;"></i><br>
+            PEMBAYARAN LUNAS – Terima kasih!
+        </div>
     </div>
 
-    <div id="notFound" class="not-found" style="display: none;">
+    <div id="notFound" class="not-found" style="display:none;">
         <h2><i class="fas fa-exclamation-triangle"></i> Tiket Tidak Ditemukan</h2>
-        <p>ID Tiket yang Anda masukkan tidak valid atau belum terdaftar. Mohon periksa kembali ID tiket Anda.</p>
-        <a href="login-customer.html" style="background: var(--blue); color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block; margin-top: 15px;">Coba Lagi</a>
+        <p>ID Tiket yang Anda masukkan tidak valid.</p>
+        <a href="/" style="background:var(--blue);color:white;padding:10px 20px;border-radius:5px;text-decoration:none;">Kembali ke Beranda</a>
     </div>
-
 </div>
 
 <script type="module">
-// =========================================================
-// 1. KONFIGURASI DAN IMPOR FIREBASE
-// =========================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { 
-    getFirestore, 
-    doc, 
-    onSnapshot,
-    getDoc,
-    updateDoc, 
-    serverTimestamp 
-} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; 
+import { getFirestore, doc, onSnapshot, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    // GANTI DENGAN KONFIGURASI FIREBASE ANDA YANG SEBENARNYA
     apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
     authDomain: "mechajob-b7360.firebaseapp.com",
     projectId: "mechajob-b7360",
     storageBucket: "mechajob-b7360.firebasestorage.app",
     messagingSenderId: "753002885541",
-    appId: "1:753002885541:web:96e4964dbd300193ff384c",
-    measurementId: "G-ZY3RS8WGP7"
+    appId: "1:753002885541:web:96e4964dbd300193ff384c"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Global state untuk menyimpan data order dan mekanik saat ini
 let currentOrderData = null;
-let currentMechanicWA = null; 
-
-// Helper function untuk format mata uang
-function formatCurrency(number) {
-    if (number === 0 || number === undefined || number === null) return 0;
-    return number.toLocaleString('id-ID');
-}
-
-// =========================================================
-// 2. LOGIKA UTAMA (GET TICKET ID & SETUP LISTENER)
-// =========================================================
+let currentMechanicWA = null;
 
 const urlParams = new URLSearchParams(window.location.search);
-const ticketId = urlParams.get('ticketId'); 
-const paymentButton = document.getElementById('paymentButton');
+const ticketId = urlParams.get('ticketId');
+
+const payOnlineBtn = document.getElementById('payOnlineBtn');
+const payManualBtn = document.getElementById('payManualBtn');
+const paymentButtons = document.getElementById('paymentButtons');
+const lunasInfo = document.getElementById('lunasInfo');
+
+function formatCurrency(n) { return n ? n.toLocaleString('id-ID') : '0'; }
 
 if (!ticketId) {
     document.getElementById('content').style.display = 'none';
     document.getElementById('notFound').style.display = 'block';
-    document.getElementById('notFound').querySelector('h2').textContent = "Tidak Ada ID Tiket";
-    document.getElementById('notFound').querySelector('p').textContent = "Anda harus memasukkan ID Tiket untuk melihat status pesanan.";
 } else {
-    document.getElementById("ticketIdDisplay").innerHTML = `ID Tiket: **${ticketId}**`;
+    document.getElementById("ticketIdDisplay").innerHTML = `ID Tiket: <strong>${ticketId}</strong>`;
     setupOrderListener(ticketId);
 }
 
-// =========================================================
-// 3. FUNGSI REAL-TIME LISTENER & RENDER
-// =========================================================
-
 function setupOrderListener(id) {
     const orderRef = doc(db, "new_orders", id);
-
-    onSnapshot(orderRef, (docSnap) => {
-        if (docSnap.exists()) {
+    onSnapshot(orderRef, async (snap) => {
+        if (snap.exists()) {
             document.getElementById('content').style.display = 'block';
             document.getElementById('notFound').style.display = 'none';
-
-            currentOrderData = docSnap.data(); // Simpan data global
-            renderStatus(currentOrderData, id); // Kirim ID juga untuk tombol
+            currentOrderData = snap.data();
+            renderAll(currentOrderData, id);
         } else {
             document.getElementById('content').style.display = 'none';
             document.getElementById('notFound').style.display = 'block';
         }
-    }, (error) => {
-        console.error("Gagal mendengarkan pesanan:", error);
-        alert("Terjadi kesalahan koneksi ke server. Coba muat ulang halaman.");
-        document.getElementById('content').style.display = 'none';
-        document.getElementById('notFound').style.display = 'block';
     });
 }
 
-async function renderStatus(data, ticketId) {
+async function renderAll(data, ticketId) {
     const status = data.status || 'pending';
     const paymentStatus = data.paymentStatus || null;
-    const statusDisplay = document.getElementById('currentStatus');
-    const steps = document.querySelectorAll('.step');
 
-    // 4a. Update Status Badge & Steps
-    const statusTextMap = {
-        'pending': 'MENUNGGU MEKANIK',
+    // Status badge
+    const badgeMap = {
+        pending: 'MENUNGGU MEKANIK',
         'in-progress': 'SEDANG DIKERJAKAN',
-        'selesai': (paymentStatus === 'menunggu_konfirmasi' ? 'MENUNGGU KONFIRMASI BAYAR' : 
-                   (paymentStatus === 'lunas' ? 'LUNAS & SELESAI' : 'SELESAI (MENUNGGU PEMBAYARAN)')),
-        'dibatalkan': 'DIBATALKAN'
+        selesai: paymentStatus === 'lunas' ? 'LUNAS & SELESAI' : 'SELESAI – MENUNGGU PEMBAYARAN',
+        dibatalkan: 'DIBATALKAN'
     };
-    
-    // Sesuaikan statusClass untuk tampilan visual
-    let statusClass = status.toLowerCase().replace('-', '');
-    if (paymentStatus === 'lunas') statusClass = 'selesai'; 
-    else if (paymentStatus === 'menunggu_konfirmasi') statusClass = 'pending'; // Ubah menjadi pending agar badge oranye/biru 
-    else if (status === 'selesai' && paymentStatus === null) statusClass = 'danger'; // Gunakan danger jika selesai tapi belum bayar
+    let badgeClass = status === 'selesai' && paymentStatus === 'lunas' ? 'lunas' : status;
+    document.getElementById('currentStatus').innerHTML = `<span class="status-badge \( {badgeClass}"> \){badgeMap[status] || status.toUpperCase()}</span>`;
 
-    statusDisplay.innerHTML = `<span class="status-badge ${statusClass}">${statusTextMap[status] || status.toUpperCase()}</span>`;
+    // Step progress
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step1').classList.add('active');
+    if (['in-progress','selesai'].includes(status) || paymentStatus) document.getElementById('step2').classList.add('active');
+    if (status === 'selesai' || paymentStatus === 'lunas') document.getElementById('step3').classList.add('active');
 
-    steps.forEach(step => step.classList.remove('active'));
-    document.getElementById('step1').classList.add('active'); 
-    if (status === 'in-progress' || status === 'selesai' || paymentStatus === 'lunas' || paymentStatus === 'menunggu_konfirmasi') {
-        document.getElementById('step2').classList.add('active');
-    }
-    if (status === 'selesai' || paymentStatus === 'lunas' || paymentStatus === 'menunggu_konfirmasi') {
-        document.getElementById('step3').classList.add('active');
-    }
+    // Data pelanggan
+    document.getElementById('custName').textContent = data.custName || '-';
+    document.getElementById('vehicleType').textContent = `\( {data.vehicleModel || ''} ( \){data.vehicleType || ''})`;
+    document.getElementById('issueDesc').textContent = data.issueDesc || '-';
+    document.getElementById('createTime').textContent = data.createdAt?.toDate?.().toLocaleString('id-ID') || '-';
 
-
-    // 4b. Update Detail Pesanan
-    document.getElementById('custName').textContent = data.custName || 'N/A';
-    document.getElementById('vehicleType').textContent = `${data.vehicleModel || 'N/A'} (${data.vehicleType || 'N/A'})`;
-    document.getElementById('issueDesc').textContent = data.issueDesc || 'N/A';
-
-    let createTime = 'N/A';
-    if (data.createdAt && data.createdAt.toDate) {
-        const date = data.createdAt.toDate();
-        createTime = date.toLocaleDateString('id-ID') + ' ' + date.toLocaleTimeString('id-ID');
-    }
-    document.getElementById('createTime').textContent = createTime;
-
-    // 4c. Update Detail Mekanik & Kontak
-    const mechanicDiv = document.getElementById('mechanicDetails');
-    const mechanicNameDisplay = document.getElementById('mechanicName');
-    currentMechanicWA = null; 
-
+    // Mekanik
     if (data.mekanikId) {
-        mechanicNameDisplay.textContent = data.mekanikName || 'Memuat detail mekanik...';
-        mechanicDiv.style.display = 'block';
-
-        // Ambil detail WA dari koleksi mekanik_users
-        try {
-            const mechanicDocRef = doc(db, "mekanik_users", data.mekanikId);
-            const mechanicSnap = await getDoc(mechanicDocRef);
-
-            if (mechanicSnap.exists()) {
-                const mData = mechanicSnap.data();
-                document.getElementById('mShopName').textContent = mData.shopName || 'Nama Bengkel Tidak Ditemukan';
-                document.getElementById('mShopWA').textContent = mData.shopWA || 'N/A';
-                currentMechanicWA = mData.shopWA; 
-            } else {
-                document.getElementById('mShopName').textContent = 'Detail Bengkel Tidak Ditemukan';
-                document.getElementById('mShopWA').textContent = 'N/A';
-            }
-        } catch (e) {
-            console.error("Gagal mengambil detail mekanik:", e);
+        document.getElementById('mechanicName').textContent = data.mekanikName || 'Mekanik';
+        const mSnap = await getDoc(doc(db, "mekanik_users", data.mekanikId));
+        if (mSnap.exists()) {
+            const m = mSnap.data();
+            document.getElementById('mShopName').textContent = m.shopName || '-';
+            document.getElementById('mShopWA').textContent = m.shopWA || '-';
+            currentMechanicWA = m.shopWA;
         }
-
-    } else {
-        mechanicNameDisplay.textContent = 'Menunggu Mekanik mengklaim pesanan.';
-        mechanicDiv.style.display = 'none';
+        document.getElementById('mechanicDetails').style.display = 'block';
     }
 
-    // 4d. Update Total Biaya & Tombol Bayar
-    const totalDiv = document.getElementById('totalDiv');
-    const totalCost = data.total || 0;
+    // Total & Tombol Pembayaran
+    const total = data.total || 0;
+    if (status === 'selesai' && total > 0) {
+        document.getElementById('totalDiv').style.display = 'block';
+        document.getElementById('totalCost').textContent = `Rp ${formatCurrency(total)}`;
 
-    if (status === 'selesai' && totalCost > 0) {
-        totalDiv.style.display = 'block';
-        document.getElementById('totalCost').textContent = `Rp ${formatCurrency(totalCost)}`;
-
-        // Tampilkan/sembunyikan tombol bayar berdasarkan paymentStatus
-        document.getElementById('paymentTotalDisplay').textContent = `Rp ${formatCurrency(totalCost)}`;
-        
         if (paymentStatus === 'lunas') {
-            paymentButton.style.display = 'block';
-            paymentButton.textContent = 'PEMBAYARAN LUNAS!';
-            paymentButton.style.backgroundColor = 'var(--success)';
-            paymentButton.disabled = true;
-        } else if (paymentStatus === 'menunggu_konfirmasi') {
-            paymentButton.style.display = 'block';
-            paymentButton.textContent = `Menunggu Konfirmasi Pembayaran dari Mekanik...`;
-            paymentButton.style.backgroundColor = 'var(--orange)';
-            paymentButton.disabled = true;
+            paymentButtons.style.display = 'none';
+            lunasInfo.style.display = 'block';
         } else {
-            // Status selesai, biaya ada, tapi belum ada konfirmasi pembayaran
-            paymentButton.style.display = 'block';
-            paymentButton.textContent = `Bayar Sekarang (Total: Rp ${formatCurrency(totalCost)})`;
-            paymentButton.style.backgroundColor = 'var(--success)';
-            paymentButton.disabled = false;
+            paymentButtons.style.display = 'block';
+            lunasInfo.style.display = 'none';
         }
-
     } else {
-        totalDiv.style.display = 'none';
-        paymentButton.style.display = 'none';
+        document.getElementById('totalDiv').style.display = 'none';
+        paymentButtons.style.display = 'none';
     }
 }
 
-// =========================================================
-// 5. LOGIKA TOMBOL PEMBAYARAN
-// =========================================================
-paymentButton.addEventListener('click', async () => {
-    if (currentMechanicWA && currentOrderData && currentOrderData.total > 0 && ticketId) {
+// ==================== BAYAR ONLINE (MIDTRANS) ====================
+payOnlineBtn.onclick = async () => {
+    if (!currentOrderData?.total) return alert("Total biaya belum ditentukan.");
 
-        const paymentStatus = currentOrderData.paymentStatus || null;
+    // Bisa langsung pakai Midtrans SNAP
+    snap.pay(currentOrderData.snapToken, { // pastikan Anda sudah simpan snapToken di Firestore saat status selesai
+        onSuccess: async (result) => {
+            await updateDoc(doc(db, "new_orders", ticketId), {
+                paymentStatus: 'lunas',
+                midtransOrderId: result.order_id,
+                paymentTime: serverTimestamp()
+            });
+            alert("Pembayaran berhasil! Status akan segera berubah menjadi LUNAS.");
+        },
+        onPending: (result) => { alert("Pembayaran sedang diproses. Kami akan update status secepatnya."); },
+        onError: (result) => { alert("Pembayaran gagal. Silakan coba lagi."); },
+        onClose: () => { }
+    });
+};
 
-        if (paymentStatus === 'menunggu_konfirmasi') {
-            alert("Anda sudah mengirim konfirmasi pembayaran. Mohon tunggu mekanik memprosesnya.");
-            return;
-        }
+// ==================== BAYAR MANUAL (Tunai/Transfer) ====================
+payManualBtn.onclick = async () => {
+    if (!currentMechanicWA) return alert("Nomor WA mekanik belum tersedia.");
 
-        const confirmPayment = confirm(`Anda akan menghubungi mekanik via WhatsApp untuk pembayaran total Rp ${formatCurrency(currentOrderData.total)}. Setelah Anda melakukan transfer/tunai, Anda bisa kembali dan mengklik tombol ini lagi untuk mengirim konfirmasi. Lanjutkan ke WhatsApp?`);
-        
-        if (!confirmPayment) return;
+    const totalFmt = formatCurrency(currentOrderData.total);
+    const waNum = currentMechanicWA.replace(/^0/, '62');
+    const msg = encodeURIComponent(
+        `Halo, saya pelanggan dengan ID Tiket *\( {ticketId}* atas nama * \){currentOrderData.custName}*.\n\n` +
+        `Saya sudah melakukan pembayaran *tunai/transfer* sebesar *Rp ${totalFmt}*.\n\n` +
+        `Mohon segera konfirmasi sebagai LUNAS di dashboard Anda. Terima kasih!`
+    );
 
-        // 1. Logika WhatsApp 
-        const waNumber = currentMechanicWA.startsWith('62') ? currentMechanicWA : `62${currentMechanicWA.substring(1)}`;
-        const totalFormatted = `Rp ${formatCurrency(currentOrderData.total)}`;
+    if (confirm(`Kami akan buka WhatsApp ke mekanik untuk konfirmasi pembayaran Rp ${totalFmt}. Lanjutkan?`)) {
+        window.open(`https://wa.me/\( {waNum}?text= \){msg}`, '_blank');
 
-        const message = encodeURIComponent(
-            `Halo, saya ingin melakukan pembayaran untuk pesanan servis motor dengan ID Tiket *${ticketId}* atas nama *${currentOrderData.custName}*. Total biaya adalah ${totalFormatted}.` +
-            `\n\nMohon kirimkan detail pembayaran (rekening bank/QRIS) dan konfirmasi penerimaan dana setelah saya transfer. Terima kasih.`
-        );
-
-        window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
-        
-        // 2. TANDAI BAHWA PELANGGAN SUDAH MELAKUKAN INQUIRY/SIAP BAYAR
-        try {
-             // Update status di Firestore
-            const orderRef = doc(db, "new_orders", ticketId);
-            await updateDoc(orderRef, {
-                paymentStatus: 'menunggu_konfirmasi', 
+        if (confirm("Setelah transfer/tunai selesai, klik OK untuk memberi tahu sistem bahwa Anda sudah bayar.")) {
+            await updateDoc(doc(db, "new_orders", ticketId), {
+                paymentStatus: 'menunggu_konfirmasi',
                 paymentInquiryTime: serverTimestamp()
             });
-
-            // Tampilan akan diupdate otomatis oleh onSnapshot listener
-
-            alert("Anda diarahkan ke WhatsApp. Status order Anda telah diperbarui menjadi Menunggu Konfirmasi.");
-            
-        } catch (e) {
-            console.error("Gagal update status pembayaran:", e);
-            alert("Gagal memperbarui status order di server. Silakan coba lagi.");
+            alert("Status diubah jadi Menunggu Konfirmasi Mekanik.");
         }
-
-    } else {
-        alert("Gagal memproses pembayaran. Detail Mekanik atau Total Biaya belum lengkap.");
     }
-});
+};
 </script>
 </body>
 </html>
