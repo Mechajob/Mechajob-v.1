@@ -348,16 +348,17 @@ async function renderStatus(data, ticketId) {
     // Sesuaikan statusClass untuk tampilan visual
     let statusClass = status.toLowerCase().replace('-', '');
     if (paymentStatus === 'lunas') statusClass = 'selesai'; 
-    else if (paymentStatus === 'menunggu_konfirmasi') statusClass = 'pending'; 
+    else if (paymentStatus === 'menunggu_konfirmasi') statusClass = 'pending'; // Ubah menjadi pending agar badge oranye/biru 
+    else if (status === 'selesai' && paymentStatus === null) statusClass = 'danger'; // Gunakan danger jika selesai tapi belum bayar
 
     statusDisplay.innerHTML = `<span class="status-badge ${statusClass}">${statusTextMap[status] || status.toUpperCase()}</span>`;
 
     steps.forEach(step => step.classList.remove('active'));
     document.getElementById('step1').classList.add('active'); 
-    if (status === 'in-progress' || status === 'selesai' || paymentStatus === 'lunas') {
+    if (status === 'in-progress' || status === 'selesai' || paymentStatus === 'lunas' || paymentStatus === 'menunggu_konfirmasi') {
         document.getElementById('step2').classList.add('active');
     }
-    if (status === 'selesai' || paymentStatus === 'lunas') {
+    if (status === 'selesai' || paymentStatus === 'lunas' || paymentStatus === 'menunggu_konfirmasi') {
         document.getElementById('step3').classList.add('active');
     }
 
@@ -428,6 +429,7 @@ async function renderStatus(data, ticketId) {
             paymentButton.style.backgroundColor = 'var(--orange)';
             paymentButton.disabled = true;
         } else {
+            // Status selesai, biaya ada, tapi belum ada konfirmasi pembayaran
             paymentButton.style.display = 'block';
             paymentButton.textContent = `Bayar Sekarang (Total: Rp ${formatCurrency(totalCost)})`;
             paymentButton.style.backgroundColor = 'var(--success)';
@@ -457,7 +459,7 @@ paymentButton.addEventListener('click', async () => {
         
         if (!confirmPayment) return;
 
-        // 1. Logika WhatsApp yang sudah ada
+        // 1. Logika WhatsApp 
         const waNumber = currentMechanicWA.startsWith('62') ? currentMechanicWA : `62${currentMechanicWA.substring(1)}`;
         const totalFormatted = `Rp ${formatCurrency(currentOrderData.total)}`;
 
@@ -468,7 +470,7 @@ paymentButton.addEventListener('click', async () => {
 
         window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
         
-        // 2. TAMBAHAN LOGIKA: TANDAI BAHWA PELANGGAN SUDAH MELAKUKAN INQUIRY/SIAP BAYAR
+        // 2. TANDAI BAHWA PELANGGAN SUDAH MELAKUKAN INQUIRY/SIAP BAYAR
         try {
              // Update status di Firestore
             const orderRef = doc(db, "new_orders", ticketId);
@@ -476,6 +478,8 @@ paymentButton.addEventListener('click', async () => {
                 paymentStatus: 'menunggu_konfirmasi', 
                 paymentInquiryTime: serverTimestamp()
             });
+
+            // Tampilan akan diupdate otomatis oleh onSnapshot listener
 
             alert("Anda diarahkan ke WhatsApp. Status order Anda telah diperbarui menjadi Menunggu Konfirmasi.");
             
