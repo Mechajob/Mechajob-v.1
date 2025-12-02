@@ -59,6 +59,7 @@
   .status-badge.pending{background: var(--orange);}
   .status-badge.in-progress{background: var(--blue);}
   .status-badge.selesai{background: var(--success);}
+  .status-badge.lunas{background: var(--success);} /* LUNAS juga hijau */
   .status-badge.dibatalkan{background: var(--danger);}
 
   /* Step Indicator */
@@ -157,8 +158,12 @@
       display: none; /* Default hidden */
       transition: background-color 0.3s;
   }
-  #paymentButton:hover {
+  #paymentButton:hover:not(:disabled) {
       background-color: #1e7e34;
+  }
+  #paymentButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
   }
 </style>
 </head>
@@ -171,7 +176,7 @@
     </header>
 
     <div id="content" class="card">
-        
+
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div style="font-size: 20px; font-weight: bold;">Status Saat Ini:</div>
             <div id="currentStatus">
@@ -228,7 +233,7 @@
             <p style="margin: 5px 0;"><i class="fas fa-user-cog"></i> **Nama Bengkel:** <span id="mShopName"></span></p>
             <p style="margin: 5px 0;"><i class="fab fa-whatsapp"></i> **WhatsApp:** <span id="mShopWA"></span></p>
         </div>
-        
+
         <button id="paymentButton" style="display: none;">
             <i class="fas fa-money-bill-wave"></i> Bayar Sekarang (Total: <span id="paymentTotalDisplay">Rp 0</span>)
         </button>
@@ -252,7 +257,9 @@ import {
     getFirestore, 
     doc, 
     onSnapshot,
-    getDoc 
+    getDoc,
+    updateDoc, 
+    serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; 
 
 const firebaseConfig = {
@@ -293,7 +300,7 @@ if (!ticketId) {
     document.getElementById('notFound').querySelector('h2').textContent = "Tidak Ada ID Tiket";
     document.getElementById('notFound').querySelector('p').textContent = "Anda harus memasukkan ID Tiket untuk melihat status pesanan.";
 } else {
-    document.getElementById("ticketIdDisplay").textContent = `ID Tiket: **${ticketId}**`;
+    document.getElementById("ticketIdDisplay").innerHTML = `ID Tiket: **${ticketId}**`;
     setupOrderListener(ticketId);
 }
 
@@ -308,7 +315,7 @@ function setupOrderListener(id) {
         if (docSnap.exists()) {
             document.getElementById('content').style.display = 'block';
             document.getElementById('notFound').style.display = 'none';
-            
+
             currentOrderData = docSnap.data(); // Simpan data global
             renderStatus(currentOrderData, id); // Kirim ID juga untuk tombol
         } else {
@@ -325,27 +332,35 @@ function setupOrderListener(id) {
 
 async function renderStatus(data, ticketId) {
     const status = data.status || 'pending';
+    const paymentStatus = data.paymentStatus || null;
     const statusDisplay = document.getElementById('currentStatus');
     const steps = document.querySelectorAll('.step');
 
     // 4a. Update Status Badge & Steps
-    const statusClass = status.toLowerCase().replace('-', '');
     const statusTextMap = {
         'pending': 'MENUNGGU MEKANIK',
         'in-progress': 'SEDANG DIKERJAKAN',
-        'selesai': 'SELESAI (MENUNGGU PEMBAYARAN)',
+        'selesai': (paymentStatus === 'menunggu_konfirmasi' ? 'MENUNGGU KONFIRMASI BAYAR' : 
+                   (paymentStatus === 'lunas' ? 'LUNAS & SELESAI' : 'SELESAI (MENUNGGU PEMBAYARAN)')),
         'dibatalkan': 'DIBATALKAN'
     };
-    statusDisplay.innerHTML = `<span class="status-badge ${statusClass}">${statusTextMap[status] || status.toUpperCase()}</span>`;
     
+    // Sesuaikan statusClass untuk tampilan visual
+    let statusClass = status.toLowerCase().replace('-', '');
+    if (paymentStatus === 'lunas') statusClass = 'selesai'; 
+    else if (paymentStatus === 'menunggu_konfirmasi') statusClass = 'pending'; 
+
+    statusDisplay.innerHTML = `<span class="status-badge ${statusClass}">${statusTextMap[status] || status.toUpperCase()}</span>`;
+
     steps.forEach(step => step.classList.remove('active'));
     document.getElementById('step1').classList.add('active'); 
-    if (status === 'in-progress' || status === 'selesai') {
+    if (status === 'in-progress' || status === 'selesai' || paymentStatus === 'lunas') {
         document.getElementById('step2').classList.add('active');
     }
-    if (status === 'selesai') {
+    if (status === 'selesai' || paymentStatus === 'lunas') {
         document.getElementById('step3').classList.add('active');
     }
+
 
     // 4b. Update Detail Pesanan
     document.getElementById('custName').textContent = data.custName || 'N/A';
@@ -362,7 +377,7 @@ async function renderStatus(data, ticketId) {
     // 4c. Update Detail Mekanik & Kontak
     const mechanicDiv = document.getElementById('mechanicDetails');
     const mechanicNameDisplay = document.getElementById('mechanicName');
-    currentMechanicWA = null; // Reset WA
+    currentMechanicWA = null; 
 
     if (data.mekanikId) {
         mechanicNameDisplay.textContent = data.mekanikName || 'Memuat detail mekanik...';
@@ -377,7 +392,7 @@ async function renderStatus(data, ticketId) {
                 const mData = mechanicSnap.data();
                 document.getElementById('mShopName').textContent = mData.shopName || 'Nama Bengkel Tidak Ditemukan';
                 document.getElementById('mShopWA').textContent = mData.shopWA || 'N/A';
-                currentMechanicWA = mData.shopWA; // Simpan WA mekanik
+                currentMechanicWA = mData.shopWA; 
             } else {
                 document.getElementById('mShopName').textContent = 'Detail Bengkel Tidak Ditemukan';
                 document.getElementById('mShopWA').textContent = 'N/A';
@@ -394,14 +409,31 @@ async function renderStatus(data, ticketId) {
     // 4d. Update Total Biaya & Tombol Bayar
     const totalDiv = document.getElementById('totalDiv');
     const totalCost = data.total || 0;
-    
+
     if (status === 'selesai' && totalCost > 0) {
         totalDiv.style.display = 'block';
         document.getElementById('totalCost').textContent = `Rp ${formatCurrency(totalCost)}`;
-        
-        // Tampilkan tombol bayar
+
+        // Tampilkan/sembunyikan tombol bayar berdasarkan paymentStatus
         document.getElementById('paymentTotalDisplay').textContent = `Rp ${formatCurrency(totalCost)}`;
-        paymentButton.style.display = 'block';
+        
+        if (paymentStatus === 'lunas') {
+            paymentButton.style.display = 'block';
+            paymentButton.textContent = 'PEMBAYARAN LUNAS!';
+            paymentButton.style.backgroundColor = 'var(--success)';
+            paymentButton.disabled = true;
+        } else if (paymentStatus === 'menunggu_konfirmasi') {
+            paymentButton.style.display = 'block';
+            paymentButton.textContent = `Menunggu Konfirmasi Pembayaran dari Mekanik...`;
+            paymentButton.style.backgroundColor = 'var(--orange)';
+            paymentButton.disabled = true;
+        } else {
+            paymentButton.style.display = 'block';
+            paymentButton.textContent = `Bayar Sekarang (Total: Rp ${formatCurrency(totalCost)})`;
+            paymentButton.style.backgroundColor = 'var(--success)';
+            paymentButton.disabled = false;
+        }
+
     } else {
         totalDiv.style.display = 'none';
         paymentButton.style.display = 'none';
@@ -411,19 +443,47 @@ async function renderStatus(data, ticketId) {
 // =========================================================
 // 5. LOGIKA TOMBOL PEMBAYARAN
 // =========================================================
-paymentButton.addEventListener('click', () => {
+paymentButton.addEventListener('click', async () => {
     if (currentMechanicWA && currentOrderData && currentOrderData.total > 0 && ticketId) {
+
+        const paymentStatus = currentOrderData.paymentStatus || null;
+
+        if (paymentStatus === 'menunggu_konfirmasi') {
+            alert("Anda sudah mengirim konfirmasi pembayaran. Mohon tunggu mekanik memprosesnya.");
+            return;
+        }
+
+        const confirmPayment = confirm(`Anda akan menghubungi mekanik via WhatsApp untuk pembayaran total Rp ${formatCurrency(currentOrderData.total)}. Setelah Anda melakukan transfer/tunai, Anda bisa kembali dan mengklik tombol ini lagi untuk mengirim konfirmasi. Lanjutkan ke WhatsApp?`);
         
+        if (!confirmPayment) return;
+
+        // 1. Logika WhatsApp yang sudah ada
         const waNumber = currentMechanicWA.startsWith('62') ? currentMechanicWA : `62${currentMechanicWA.substring(1)}`;
         const totalFormatted = `Rp ${formatCurrency(currentOrderData.total)}`;
-        
+
         const message = encodeURIComponent(
             `Halo, saya ingin melakukan pembayaran untuk pesanan servis motor dengan ID Tiket *${ticketId}* atas nama *${currentOrderData.custName}*. Total biaya adalah ${totalFormatted}.` +
-            `\n\nMohon kirimkan detail pembayaran (rekening bank/QRIS). Terima kasih.`
+            `\n\nMohon kirimkan detail pembayaran (rekening bank/QRIS) dan konfirmasi penerimaan dana setelah saya transfer. Terima kasih.`
         );
 
         window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
         
+        // 2. TAMBAHAN LOGIKA: TANDAI BAHWA PELANGGAN SUDAH MELAKUKAN INQUIRY/SIAP BAYAR
+        try {
+             // Update status di Firestore
+            const orderRef = doc(db, "new_orders", ticketId);
+            await updateDoc(orderRef, {
+                paymentStatus: 'menunggu_konfirmasi', 
+                paymentInquiryTime: serverTimestamp()
+            });
+
+            alert("Anda diarahkan ke WhatsApp. Status order Anda telah diperbarui menjadi Menunggu Konfirmasi.");
+            
+        } catch (e) {
+            console.error("Gagal update status pembayaran:", e);
+            alert("Gagal memperbarui status order di server. Silakan coba lagi.");
+        }
+
     } else {
         alert("Gagal memproses pembayaran. Detail Mekanik atau Total Biaya belum lengkap.");
     }
