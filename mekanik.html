@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Mechajob Standar - Dashboard Bengkel</title>
+<title>Mechajob - Dashboard Bengkel</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
@@ -72,11 +72,15 @@
   .status.in-progress{background:var(--blue)}
   .status.selesai{background:var(--success)}
   .status.pro{background:var(--gold); color:#111;}
+  .status.danger{background:var(--danger)} 
 
   .mini{padding:6px 10px;font-size:13px;background:var(--orange);color:white;border:1px solid var(--orange);}
   .mini:hover{background:#f57c00;}
   .mini-finish{background:var(--success); color: white;}
   .mini-finish:hover{background:#1e7e34;}
+  .mini-lunas{background:var(--success); color: white;} 
+  .mini-lunas:hover{background:#1e7e34;}
+
 
   /* --- 7. OVERLAY & LOCK --- */
   .locked-overlay{
@@ -182,14 +186,13 @@
               <th>ID</th>
               <th>Pelanggan</th>
               <th>WA</th> <th>Layanan</th>
-              <th>Status</th>
-              <th>Total</th>
+              <th>Status Order</th>
+              <th>**Status Bayar**</th> <th>Total</th>
               <th>Aksi</th>
             </tr>
           </thead>
           <tbody id="tblOrders">
-             <tr><td colspan="7">Memuat orderan aktif...</td></tr> </tbody>
-        </table>
+             <tr><td colspan="8">Memuat orderan aktif...</td></tr> </tbody> </table>
       </div>
     </main>
   </div>
@@ -241,8 +244,8 @@ let currentUserEmail = null;
 // =========================================================
 const STATE = {
   shop: { name: "Memuat...", address: "Memuat...", wa: "Memuat...", isPro: false, limit: 10, rating: 0 }, 
-  customers: [], // Pesanan Baru Tersedia (status: pending)
-  myOrders: [],  // Orderan Saya (mekanikId: currentUserId)
+  customers: [], 
+  myOrders: [],  
 };
 
 // =========================================================
@@ -250,7 +253,6 @@ const STATE = {
 // =========================================================
 function formatCurrency(number) {
     if (number === 0 || number === undefined) return '0';
-    // Gunakan toLocaleString untuk format Indonesia
     return number.toLocaleString('id-ID');
 }
 
@@ -288,8 +290,9 @@ function render(){
 
   // 3c. Update Ringkasan Stat
   const currentOrdersInProgress = STATE.myOrders.filter(o => o.status === 'in-progress').length;
+  // Hitung Omzet HANYA dari yang sudah LUNAS
   const totalRevenue = STATE.myOrders
-    .filter(o => o.status === 'selesai' && o.total)
+    .filter(o => o.paymentStatus === 'lunas' && o.total)
     .reduce((sum, o) => sum + o.total, 0);
 
   document.getElementById("statWaiting").textContent = STATE.customers.length;
@@ -319,25 +322,46 @@ function render(){
   const otbody=document.getElementById("tblOrders");
   otbody.innerHTML="";
   if (STATE.myOrders.length === 0) {
-      otbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Anda belum mengambil orderan.</td></tr>'; // COLSPAN 7
+      otbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Anda belum mengambil orderan.</td></tr>'; 
   } else {
       STATE.myOrders.forEach(o=>{
           const statusClass = o.status.toLowerCase().replace('-', ''); 
           let statusText = o.status.charAt(0).toUpperCase() + o.status.slice(1).replace('-', ' ');
           const totalDisplay = o.status === 'selesai' ? `Rp ${formatCurrency(o.total)}` : 'Belum selesai';
+          
+          let actionButton = `<button class="btn-ghost" disabled>N/A</button>`;
+          let paymentStatusDisplay = `<span class="status wait">N/A</span>`;
 
-          const actionButton = o.status === 'in-progress' 
-                               ? `<button class="mini mini-finish" onclick="window.finishOrder('${o.id}')">Selesaikan</button>`
-                               : `<button class="btn-ghost" disabled>Selesai</button>`;
-
-          const waLink = o.custWa ? `<a href="https://wa.me/${o.custWa.replace(/[^0-9]/g, '')}" target="_blank">${o.custWa}</a>` : '-';
+          if (o.status === 'in-progress') {
+            actionButton = `<button class="mini mini-finish" onclick="window.finishOrder('${o.id}')">Selesaikan</button>`;
+            paymentStatusDisplay = `<span class="status wait">N/A</span>`;
+          } 
+          
+          if (o.status === 'selesai') {
             
+            // Logika Status Pembayaran
+            if (o.paymentStatus === 'lunas') {
+                paymentStatusDisplay = `<span class="status selesai">LUNAS</span>`;
+                actionButton = `<button class="btn-ghost" disabled>Selesai</button>`;
+            } else if (o.paymentStatus === 'menunggu_konfirmasi') {
+                paymentStatusDisplay = `<button class="mini mini-lunas" onclick="window.confirmPayment('${o.id}')">Konfirmasi LUNAS</button>`;
+                statusText = 'Selesai (Bayar)';
+                actionButton = `<button class="btn-ghost" disabled>Menunggu</button>`;
+            } else {
+                paymentStatusDisplay = `<span class="status danger">BELUM</span>`;
+                actionButton = `<button class="mini mini-finish" onclick="window.finishOrder('${o.id}')">Set Biaya</button>`;
+            }
+          }
+          
+          const waLink = o.custWa ? `<a href="https://wa.me/${o.custWa.replace(/[^0-9]/g, '')}" target="_blank">${o.custWa}</a>` : '-';
+
           const tr=document.createElement("tr");
           tr.innerHTML=`
           <td>${o.id.substring(0, 6)}...</td>
           <td>${o.cust}</td>
           <td>${waLink}</td> <td>${o.service}</td>
           <td><span class="status ${statusClass}">${statusText}</span></td>
+          <td>${paymentStatusDisplay}</td> 
           <td>${totalDisplay}</td>
           <td>${actionButton}</td>`;
           otbody.appendChild(tr);
@@ -356,12 +380,12 @@ function render(){
 // =========================================================
 
 async function fetchAndRenderProfile(uid, email) {
+    
     try {
         const docRef = doc(db, "mekanik_users", uid);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-            // KASUS 1: Dokumen sudah ada, ambil datanya
             const data = docSnap.data();
             STATE.shop = {
                 name: data.shopName || "Nama Bengkel Belum Disetel",
@@ -372,7 +396,6 @@ async function fetchAndRenderProfile(uid, email) {
                 rating: data.rating || 0 
             };
         } else {
-            // KASUS 2: Dokumen TIDAK ADA, buat dokumen baru (Autofill)
             console.log("Dokumen mekanik baru tidak ditemukan. Membuat profil default.");
 
             const defaultProfile = {
@@ -431,7 +454,6 @@ function setupRealtimeNewOrderListener() {
 // Mendengarkan Orderan SAYA (mekanikId: currentUserId) secara Realtime
 function setupRealtimeMyOrderListener(uid) {
     const ordersRef = collection(db, "new_orders");
-    // Gunakan query yang benar untuk mengambil orderan milik mekanik yang sedang login
     const q = query(ordersRef, where("mekanikId", "==", uid));
 
     onSnapshot(q, (snapshot) => {
@@ -440,10 +462,11 @@ function setupRealtimeMyOrderListener(uid) {
             return {
                 id: doc.id, 
                 cust: data.custName,
-                custWa: data.custWA || 'Tidak Ada', // Tambahkan custWA
+                custWa: data.custWA || 'Tidak Ada', 
                 service: data.issueType || data.issueDesc,
                 status: data.status,
-                total: data.total || 0 
+                total: data.total || 0,
+                paymentStatus: data.paymentStatus || null 
             };
         });
         render(); 
@@ -526,25 +549,46 @@ window.finishOrder = async function(id) {
     if (isNaN(totalCost) || totalCost <= 0) {
         return alert("Input biaya tidak valid. Harus berupa angka positif.");
     }
-    
-    if (!confirm(`Yakin ingin menyelesaikan pesanan ${id.substring(0, 6)} dengan total Rp ${formatCurrency(totalCost)}?`)) {
+
+    if (!confirm(`Yakin ingin menyelesaikan pesanan ${id.substring(0, 6)} dengan total Rp ${formatCurrency(totalCost)}? Status pembayaran akan direset.`)) {
         return;
     }
-    
+
     const orderRef = doc(db, "new_orders", id);
     try {
         await updateDoc(orderRef, {
             status: "selesai",
             total: totalCost,
+            paymentStatus: null, // Reset status pembayaran saat biaya di set
             finishTime: serverTimestamp()
         });
-        alert(`Order ${id.substring(0, 6)} berhasil diselesaikan dan dicatat!`);
+        alert(`Order ${id.substring(0, 6)} berhasil diselesaikan dan Total Biaya dicatat!`);
     } catch (error) {
         console.error("Gagal menyelesaikan order:", error);
         alert("Gagal menyelesaikan order. Silakan coba lagi.");
     }
 
 }
+
+// FUNGSI BARU: KONFIRMASI PEMBAYARAN
+window.confirmPayment = async function(id) {
+    if (!confirm(`Yakin ingin mengkonfirmasi bahwa pesanan ${id.substring(0, 6)} SUDAH DIBAYAR LUNAS? Tindakan ini akan menyelesaikan order secara total.`)) {
+        return;
+    }
+
+    const orderRef = doc(db, "new_orders", id);
+    try {
+        await updateDoc(orderRef, {
+            paymentStatus: "lunas", // Status baru: LUNAS
+            paidTime: serverTimestamp()
+        });
+        alert(`Pembayaran order ${id.substring(0, 6)} berhasil dikonfirmasi LUNAS!`);
+    } catch (error) {
+        console.error("Gagal konfirmasi pembayaran:", error);
+        alert("Gagal mengkonfirmasi pembayaran. Silakan coba lagi.");
+    }
+}
+
 
 // =========================================================
 // 6. AUTENTIKASI DAN INISIALISASI
@@ -563,21 +607,27 @@ onAuthStateChanged(auth, (user) => {
 
         // Pasang event listener tombol Logout (biar lebih mudah)
         document.getElementById('btnLogoutHeader').onclick = () => signOut(auth).then(() => {
-            window.location.href = "login.html"; // Ganti ke halaman login Anda
+            window.location.href = "login.html"; 
         });
         document.getElementById('btnLogoutFooter').onclick = document.getElementById('btnLogoutHeader').onclick;
+
+        // Pasang event listener tombol Edit Profile (simulasi)
+        document.getElementById('btnEditProfile').onclick = () => alert("Fitur Edit Profil belum diimplementasikan.");
+        document.getElementById('btnUpgrade').onclick = () => alert("Fitur Upgrade ke PRO belum diimplementasikan.");
+        document.getElementById('btnUpgrade2').onclick = document.getElementById('btnUpgrade').onclick;
+
 
     } else {
         // User is signed out.
         console.log("Tidak ada user login. Mengarahkan ke halaman login.");
-        // window.location.href = "login.html"; // Uncomment ini jika ada halaman login terpisah
+        
         document.getElementById('headerInfo').textContent = "Anda belum login.";
         document.getElementById("shopName").textContent = "Tidak Login";
-        // Kosongkan tabel dan status jika tidak login
+        
         STATE.customers = [];
         STATE.myOrders = [];
         render(); 
-        
+
         // Simulasikan logout jika belum ada halaman login
         document.getElementById('btnLogoutHeader').onclick = () => alert("Simulasi Logout. Silakan refresh halaman.");
         document.getElementById('btnLogoutFooter').onclick = document.getElementById('btnLogoutHeader').onclick;
