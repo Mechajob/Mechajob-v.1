@@ -333,7 +333,8 @@ function render(){
           let paymentStatusDisplay = `<span class="status wait">N/A</span>`;
 
           if (o.status === 'in-progress') {
-            actionButton = `<button class="mini mini-finish" onclick="window.finishOrder('${o.id}')">Selesaikan</button>`;
+            // REVISI: Ubah teks tombol menjadi 'Set Biaya & Selesaikan'
+            actionButton = `<button class="mini mini-finish" onclick="window.finishOrder('${o.id}')">Set Biaya & Selesaikan</button>`;
             paymentStatusDisplay = `<span class="status wait">N/A</span>`;
           } 
           
@@ -349,7 +350,8 @@ function render(){
                 actionButton = `<button class="btn-ghost" disabled>Menunggu</button>`;
             } else {
                 paymentStatusDisplay = `<span class="status danger">BELUM</span>`;
-                actionButton = `<button class="mini mini-finish" onclick="window.finishOrder('${o.id}')">Set Biaya</button>`;
+                // REVISI: Ubah teks menjadi 'Edit Biaya'
+                actionButton = `<button class="mini mini-finish" onclick="window.finishOrder('${o.id}')">Edit Biaya</button>`;
             }
           }
           
@@ -550,7 +552,7 @@ window.finishOrder = async function(id) {
         return alert("Input biaya tidak valid. Harus berupa angka positif.");
     }
 
-    if (!confirm(`Yakin ingin menyelesaikan pesanan ${id.substring(0, 6)} dengan total Rp ${formatCurrency(totalCost)}? Status pembayaran akan direset.`)) {
+    if (!confirm(`Yakin ingin menyelesaikan pesanan ${id.substring(0, 6)} dengan total Rp ${formatCurrency(totalCost)}? Status order akan diubah menjadi Selesai (Menunggu Pembayaran).`)) {
         return;
     }
 
@@ -570,7 +572,7 @@ window.finishOrder = async function(id) {
 
 }
 
-// FUNGSI BARU: KONFIRMASI PEMBAYARAN
+// FUNGSI BARU: KONFIRMASI PEMBAYARAN (Dipanggil saat paymentStatus = 'menunggu_konfirmasi')
 window.confirmPayment = async function(id) {
     if (!confirm(`Yakin ingin mengkonfirmasi bahwa pesanan ${id.substring(0, 6)} SUDAH DIBAYAR LUNAS? Tindakan ini akan menyelesaikan order secara total.`)) {
         return;
