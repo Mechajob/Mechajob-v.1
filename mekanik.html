@@ -78,8 +78,8 @@
   .mini:hover{background:#f57c00;}
   .mini-finish{background:var(--success); color: white;}
   .mini-finish:hover{background:#1e7e34;}
-  .mini-lunas{background:var(--success); color: white;} 
-  .mini-lunas:hover{background:#1e7e34;}
+  .mini-lunas{background:var(--danger); color: white;} 
+  .mini-lunas:hover{background:#c82333;}
 
 
   /* --- 7. OVERLAY & LOCK --- */
@@ -201,6 +201,7 @@
 <script type="module">
 // =========================================================
 // 1. KONFIGURASI DAN IMPOR FIREBASE
+// **PERHATIAN: GANTI DENGAN KONFIGURASI FIREBASE ANDA YANG SEBENARNYA**
 // =========================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import { 
@@ -328,7 +329,7 @@ function render(){
           const statusClass = o.status.toLowerCase().replace('-', ''); 
           let statusText = o.status.charAt(0).toUpperCase() + o.status.slice(1).replace('-', ' ');
           const totalDisplay = o.status === 'selesai' ? `Rp ${formatCurrency(o.total)}` : 'Belum selesai';
-          
+
           let actionButton = `<button class="btn-ghost" disabled>N/A</button>`;
           let paymentStatusDisplay = `<span class="status wait">N/A</span>`;
 
@@ -336,9 +337,9 @@ function render(){
             actionButton = `<button class="mini mini-finish" onclick="window.finishOrder('${o.id}')">Selesaikan</button>`;
             paymentStatusDisplay = `<span class="status wait">N/A</span>`;
           } 
-          
+
           if (o.status === 'selesai') {
-            
+
             // Logika Status Pembayaran
             if (o.paymentStatus === 'lunas') {
                 paymentStatusDisplay = `<span class="status selesai">LUNAS</span>`;
@@ -352,7 +353,7 @@ function render(){
                 actionButton = `<button class="mini mini-finish" onclick="window.finishOrder('${o.id}')">Set Biaya</button>`;
             }
           }
-          
+
           const waLink = o.custWa ? `<a href="https://wa.me/${o.custWa.replace(/[^0-9]/g, '')}" target="_blank">${o.custWa}</a>` : '-';
 
           const tr=document.createElement("tr");
@@ -380,7 +381,7 @@ function render(){
 // =========================================================
 
 async function fetchAndRenderProfile(uid, email) {
-    
+
     try {
         const docRef = doc(db, "mekanik_users", uid);
         const docSnap = await getDoc(docRef);
@@ -607,6 +608,7 @@ onAuthStateChanged(auth, (user) => {
 
         // Pasang event listener tombol Logout (biar lebih mudah)
         document.getElementById('btnLogoutHeader').onclick = () => signOut(auth).then(() => {
+            // Anda harus membuat halaman login.html untuk pengalihan
             window.location.href = "login.html"; 
         });
         document.getElementById('btnLogoutFooter').onclick = document.getElementById('btnLogoutHeader').onclick;
@@ -620,16 +622,16 @@ onAuthStateChanged(auth, (user) => {
     } else {
         // User is signed out.
         console.log("Tidak ada user login. Mengarahkan ke halaman login.");
-        
+
         document.getElementById('headerInfo').textContent = "Anda belum login.";
         document.getElementById("shopName").textContent = "Tidak Login";
-        
+
         STATE.customers = [];
         STATE.myOrders = [];
         render(); 
-
+        
         // Simulasikan logout jika belum ada halaman login
-        document.getElementById('btnLogoutHeader').onclick = () => alert("Simulasi Logout. Silakan refresh halaman.");
+        document.getElementById('btnLogoutHeader').onclick = () => alert("Anda harus login untuk menggunakan dashboard ini. Mengarahkan ke login.html");
         document.getElementById('btnLogoutFooter').onclick = document.getElementById('btnLogoutHeader').onclick;
     }
 });
