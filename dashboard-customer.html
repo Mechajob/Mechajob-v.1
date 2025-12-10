@@ -183,6 +183,7 @@
                 <span class="status-badge pending">MEMUAT</span>
             </div>
         </div>
+        
 
         <div class="steps-container">
             <div class="step active" id="step1">
@@ -251,6 +252,7 @@
 <script type="module">
 // =========================================================
 // 1. KONFIGURASI DAN IMPOR FIREBASE
+// **PERHATIAN: GANTI DENGAN KONFIGURASI FIREBASE ANDA YANG SEBENARNYA**
 // =========================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import { 
@@ -263,7 +265,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; 
 
 const firebaseConfig = {
-    // GANTI DENGAN KONFIGURASI FIREBASE ANDA YANG SEBENARNYA
     apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
     authDomain: "mechajob-b7360.firebaseapp.com",
     projectId: "mechajob-b7360",
@@ -291,8 +292,8 @@ function formatCurrency(number) {
 // =========================================================
 
 const urlParams = new URLSearchParams(window.location.search);
+// Gunakan 'ticketId' sebagai parameter URL. Contoh: dashboard-customer.html?ticketId=XYZ123
 const ticketId = urlParams.get('ticketId'); 
-// Mengganti ID tombol
 const paymentActionBtn = document.getElementById('paymentActionBtn');
 
 if (!ticketId) {
@@ -345,7 +346,7 @@ async function renderStatus(data, ticketId) {
                    (paymentStatus === 'lunas' ? 'LUNAS & SELESAI' : 'SELESAI (MENUNGGU PEMBAYARAN)')),
         'dibatalkan': 'DIBATALKAN'
     };
-    
+
     // Sesuaikan statusClass untuk tampilan visual
     let statusClass = status.toLowerCase().replace('-', '');
     if (paymentStatus === 'lunas') statusClass = 'selesai'; 
@@ -418,7 +419,7 @@ async function renderStatus(data, ticketId) {
         document.getElementById('totalCost').textContent = `Rp ${totalCostFormatted}`;
 
         // Tampilkan/sembunyikan tombol bayar berdasarkan paymentStatus
-        
+
         if (paymentStatus === 'lunas') {
             paymentActionBtn.style.display = 'block';
             paymentActionBtn.textContent = 'PEMBAYARAN LUNAS!';
@@ -456,25 +457,24 @@ paymentActionBtn.addEventListener('click', async () => {
             alert("Anda sudah mengirim konfirmasi pembayaran. Mohon tunggu mekanik memprosesnya.");
             return;
         }
-        
+
         const totalFormatted = formatCurrency(currentOrderData.total);
 
         const confirmPayment = confirm(`Anda akan menghubungi mekanik via WhatsApp untuk konfirmasi pembayaran total Rp ${totalFormatted}. Setelah Anda mentransfer/memberi tunai, Anda WAJIB kembali ke sini dan klik OK pada pesan ini untuk mengirim notifikasi ke mekanik. Lanjutkan ke WhatsApp?`);
-        
+
         if (!confirmPayment) return;
 
         // 1. Logika WhatsApp (Membuka chat untuk konfirmasi)
         const waNumber = currentMechanicWA.startsWith('62') ? currentMechanicWA : `62${currentMechanicWA.substring(1)}`;
-        
+
         const message = encodeURIComponent(
             `Halo, saya sudah melakukan pembayaran untuk pesanan servis motor dengan ID Tiket *${ticketId}* atas nama *${currentOrderData.custName}* sebesar Rp ${totalFormatted}.` +
             `\n\nMohon dicek dan dikonfirmasi sebagai LUNAS di dashboard Anda. Terima kasih.`
         );
 
         window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
-        
+
         // 2. TANDAI BAHWA PELANGGAN SUDAH MELAKUKAN INQUIRY/SIAP BAYAR
-        // Ini adalah langkah kritis setelah pelanggan diarahkan ke WA
         
         // Minta konfirmasi lagi setelah diarahkan ke WA
         if (!confirm("PENTING: Apakah Anda sudah menghubungi mekanik dan menyelesaikan pembayaran (Tunai/Transfer)? Klik OK untuk mengirim notifikasi konfirmasi ke mekanik.")) {
@@ -492,7 +492,7 @@ paymentActionBtn.addEventListener('click', async () => {
             // Tampilan akan diupdate otomatis oleh onSnapshot listener
 
             alert("Notifikasi konfirmasi pembayaran berhasil dikirim. Status order Anda telah diperbarui menjadi Menunggu Konfirmasi Mekanik.");
-            
+
         } catch (e) {
             console.error("Gagal update status pembayaran:", e);
             alert("Gagal memperbarui status order di server. Silakan coba lagi.");
