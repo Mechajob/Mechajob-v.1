@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Mechajob - Dashboard Bengkel</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  /* --- 1. VARIABEL CSS --- */
+  :root{
+    --orange:#ff9800; 
+    --blue:#2a6ed4; 
+    --bg:#f4f7f9; 
+    --card:#ffffff;
+    --muted:#6b7280; 
+    --success:#28a745; 
+    --danger:#dc3545;
+    --gold: #FFD700; /* Untuk status PRO */
+  }
+
+  /* --- 2. GAYA GLOBAL & UTAMA --- */
+  *{box-sizing:border-box}
+  body{font-family:Arial,sans-serif;margin:0;background:var(--bg);color:#111}
+  .wrap{max-width:1200px;margin:20px auto;padding:16px}
+
+  /* --- 3. HEADER & TOMBOL --- */
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:var(--blue);
+    color:#fff;
+    padding:15px 20px;
+    border-radius:10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  header h1{margin:0;font-size:22px;font-weight: bold;}
+  button{cursor:pointer;border:0;padding:10px 15px;border-radius:8px;font-weight:700;transition: background 0.2s;}
+  .btn-ghost{background: #f8fafc;color: #333;border:1px solid #ddd;}
+  .btn-ghost:hover{background:#eee;}
+  .btn-pro{background:var(--orange);color:#fff}
+  .btn-pro:hover{background:#f57c00;}
+  .btn-danger{background:var(--danger);color:#fff}
+  .btn-danger:hover{background:#c82333;}
+  .btn-upgrade{background:var(--danger);color:#fff}
+  .btn-upgrade:hover{background:#c82333;}
+
+  /* --- 4. LAYOUT GRID & KARTU --- */
+  .grid{display:grid;grid-template-columns:360px 1fr;gap:20px;margin-top:20px}
+  .card{background:var(--card);padding:20px;border-radius:12px;box-shadow:0 6px 20px rgba(10,10,20,0.05);position:relative;margin-bottom:20px;}
+
+  /* --- 5. DETAIL PROFIL & STATISTIK --- */
+  .profile-logo{width:80px;height:80px;border-radius:10px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;box-shadow: 0 0 10px rgba(0,0,0,0.1);}
+  .muted{color:var(--muted);font-size:13px}
+  .small{font-size:13px;color:#333}
+  .stat-grid{display:flex;gap:10px;margin-top:15px}
+  .stat{flex:1;background:#f8fafc;padding:12px;border-radius:8px;text-align:center;border:1px solid #eee;}
+  .stat .num{font-size:24px;font-weight:800;color:var(--orange)}
+  .section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;padding-bottom:5px;border-bottom:1px solid #eee;}
+
+  /* --- 6. TABEL DAN STATUS --- */
+  .table{width:100%;border-collapse:collapse;margin-top:10px;}
+  .table th,.table td{padding:10px 12px;border-bottom:1px solid #eee;text-align:left;font-size:14px}
+  .table th{background:var(--blue);color:#fff;text-transform:uppercase;font-size:12px}
+  .table tbody tr:last-child td { border-bottom: none; }
+  .table tbody tr:hover { background-color: #f7f7f7; }
+
+  .status{padding:6px 10px;border-radius:999px;font-weight:700;color:#fff;font-size:12px}
+  .status.wait{background:var(--orange)}
+  .status.available{background:var(--success)}
+  .status.in-progress{background:var(--blue)}
+  .status.selesai{background:var(--success)}
+  .status.pro{background:var(--gold); color:#111;}
+  .status.danger{background:var(--danger)} 
+
+  .mini{padding:6px 10px;font-size:13px;background:var(--orange);color:white;border:1px solid var(--orange);}
+  .mini:hover{background:#f57c00;}
+  .mini-finish{background:var(--success); color: white;}
+  .mini-finish:hover{background:#1e7e34;}
+  .mini-lunas{background:var(--danger); color: white;} 
+  .mini-lunas:hover{background:#c82333;}
+
+
+  /* --- 7. OVERLAY & LOCK --- */
+  .locked-overlay{
+    position:absolute;inset:0;background:rgba(255,255,255,0.9);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    border-radius:10px;text-align:center;backdrop-filter:blur(3px);
+  }
+  .locked-overlay .lock-icon {
+      font-size: 40px;
+      color: var(--muted);
+      margin-bottom: 10px;
+  }
+  .profile-actions{
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+
+  /* --- 8. RESPONSIVE --- */
+  @media(max-width:980px){
+    .grid{grid-template-columns:1fr; gap: 15px;}
+    .wrap {padding: 10px;}
+    header h1 { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1><i class="fas fa-tachometer-alt"></i> Mechajob — Dashboard Bengkel</h1>
+      <div class="muted" id="headerInfo">Memuat status akun...</div> 
+    </div>
+    <button class="btn-ghost" id="btnLogoutHeader">🚪 Logout</button>
+  </header>
+
+  <div class="grid">
+    <aside>
+      <div class="card">
+        <div style="display:flex;gap:15px;align-items:center">
+          <div class="profile-logo"><i class="fas fa-tools"></i></div>
+          <div>
+            <div style="font-weight:800; font-size: 16px;" id="shopName">Memuat Nama Bengkel...</div>
+            <div class="muted" id="shopAddr">Memuat Alamat...</div>
+            <div style="margin-top:6px" class="muted"><i class="fab fa-whatsapp"></i> WA: <span id="shopWA">Memuat...</span></div>
+            <div style="margin-top:8px" id="shopStatusContainer"><span class="status wait">STANDAR</span></div>
+            <div style="margin-top:8px; font-size: 14px;" id="shopRating"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px" class="section-title">
+          <strong><i class="fas fa-chart-bar"></i> Ringkasan Kinerja</strong>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><div class="num" id="statWaiting">0</div><div class="muted">Pesanan Baru</div></div>
+          <div class="stat"><div class="num" id="statTaken">0</div><div class="muted">Order Aktif</div></div>
+          <div class="stat"><div class="num" id="statRevenue">Rp 0</div><div class="muted">Omzet Selesai</div></div>
+        </div>
+
+        <div class="profile-actions">
+            <button class="btn-ghost" id="btnEditProfile"><i class="fas fa-cog"></i> Edit Profil</button>
+            <button class="btn-pro" id="btnUpgrade"><i class="fas fa-crown"></i> Upgrade ke PRO</button>
+            <button class="btn-danger" id="btnLogoutFooter"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="card">
+        <div class="section-title">
+          <strong><i class="fas fa-car-side"></i> Pesanan Baru Tersedia</strong>
+          <div class="muted" id="orderLimitInfo">Memuat batas order...</div>
+        </div>
+        <table class="table">
+          <thead><tr><th>ID</th><th>Nama</th><th>Kendaraan</th><th>Keluhan</th><th>Lokasi</th><th>Aksi</th></tr></thead>
+          <tbody id="tblCustomers">
+            <tr><td colspan="6">Memuat pesanan baru dari server...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" style="min-height: 180px;">
+        <div class="section-title">
+          <strong><i class="fas fa-cogs"></i> Sparepart Dicari Pelanggan</strong>
+        </div>
+        <div class="locked-overlay" id="sparepartLock">
+          <div class="lock-icon"><i class="fas fa-lock"></i></div>
+          <div>🔒 Fitur ini **terkunci**<br><small>Upgrade ke PRO untuk mengakses pencarian sparepart pelanggan</small></div>
+          <button class="btn-upgrade" style="margin-top:15px" id="btnUpgrade2"><i class="fas fa-bolt"></i> Upgrade ke PRO Sekarang</button>
+        </div>
+        <div id="sparepartContent">
+          </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title"><strong><i class="fas fa-receipt"></i> Orderan Saya</strong></div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Pelanggan</th>
+              <th>WA</th> <th>Layanan</th>
+              <th>Status Order</th>
+              <th>**Status Bayar**</th> <th>Total</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tblOrders">
+             <tr><td colspan="8">Memuat orderan aktif...</td></tr> </tbody> </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script type="module">
+// =========================================================
+// 1. KONFIGURASI DAN IMPOR FIREBASE
+// **PERHATIAN: GANTI DENGAN KONFIGURASI FIREBASE ANDA YANG SEBENARNYA**
+// =========================================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { 
+    getAuth, 
+    onAuthStateChanged, 
+    signOut 
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { 
+    getFirestore, 
+    doc, 
+    getDoc, 
+    updateDoc,
+    collection, 
+    query, 
+    where, 
+    onSnapshot,
+    setDoc, 
+    serverTimestamp,
+    runTransaction 
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; 
+
+const firebaseConfig = {
+    apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
+    authDomain: "mechajob-b7360.firebaseapp.com",
+    projectId: "mechajob-b7360",
+    storageBucket: "mechajob-b7360.firebasestorage.app",
+    messagingSenderId: "753002885541",
+    appId: "1:753002885541:web:96e4964dbd300193ff384c",
+    measurementId: "G-ZY3RS8WGP7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUserId = null;
+let currentUserEmail = null; 
+
+// =========================================================
+// 2. STATE APLIKASI
+// =========================================================
+const STATE = {
+  shop: { name: "Memuat...", address: "Memuat...", wa: "Memuat...", isPro: false, limit: 10, rating: 0 }, 
+  customers: [], 
+  myOrders: [],  
+};
+
+// =========================================================
+// 3. FUNGSI RENDER UTAMA
+// =========================================================
+function formatCurrency(number) {
+    if (number === 0 || number === undefined) return '0';
+    return number.toLocaleString('id-ID');
+}
+
+function render(){
+
+  // 3a. Update Header Info
+  const shopStatusText = STATE.shop.isPro ? 'PRO' : 'STANDAR';
+  const shopStatusClass = STATE.shop.isPro ? 'pro' : 'wait';
+
+  document.getElementById('headerInfo').innerHTML = `<i class="fas fa-user-circle"></i> ${currentUserEmail || 'Memuat...'} • Akun ${shopStatusText}`;
+
+  // 3b. Update Profil & Status
+  document.getElementById("shopName").textContent = STATE.shop.name;
+  document.getElementById("shopAddr").textContent = STATE.shop.address;
+  document.getElementById("shopWA").textContent = STATE.shop.wa;
+  document.getElementById("shopStatusContainer").innerHTML = `<span class="status ${shopStatusClass}">${shopStatusText}</span>`;
+
+  // RENDER RATING
+  const ratingDisplay = document.getElementById("shopRating");
+  if (STATE.shop.rating && STATE.shop.rating > 0) {
+      const fullStars = Math.floor(STATE.shop.rating);
+      const halfStar = STATE.shop.rating % 1 >= 0.5;
+      let starsHTML = '';
+      for (let i = 0; i < fullStars; i++) {
+          starsHTML += '<i class="fas fa-star" style="color: var(--orange); font-size: 14px;"></i>';
+      }
+      if (halfStar) {
+          starsHTML += '<i class="fas fa-star-half-alt" style="color: var(--orange); font-size: 14px;"></i>';
+      }
+      ratingDisplay.innerHTML = `Rating: ${STATE.shop.rating.toFixed(1)} ${starsHTML}`;
+  } else {
+      ratingDisplay.textContent = 'Rating: Belum ada';
+  }
+
+
+  // 3c. Update Ringkasan Stat
+  const currentOrdersInProgress = STATE.myOrders.filter(o => o.status === 'in-progress').length;
+  // Hitung Omzet HANYA dari yang sudah LUNAS
+  const totalRevenue = STATE.myOrders
+    .filter(o => o.paymentStatus === 'lunas' && o.total)
+    .reduce((sum, o) => sum + o.total, 0);
+
+  document.getElementById("statWaiting").textContent = STATE.customers.length;
+  document.getElementById("statTaken").textContent = currentOrdersInProgress; 
+  document.getElementById("statRevenue").textContent = `Rp ${formatCurrency(totalRevenue)}`;
+
+  document.getElementById("orderLimitInfo").textContent = STATE.shop.isPro 
+    ? 'Batas Akun PRO: Tidak ada batasan jumlah order aktif.'
+    : `Batas Akun Standar: Ambil maks. ${STATE.shop.limit} order aktif. (Aktif: ${currentOrdersInProgress}/${STATE.shop.limit})`; 
+
+  // 3d. Render Pesanan Baru (customers)
+  const ctbody=document.getElementById("tblCustomers");
+  ctbody.innerHTML="";
+  if (STATE.customers.length === 0) {
+      ctbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Tidak ada pesanan baru saat ini.</td></tr>';
+  } else {
+      STATE.customers.forEach(c=>{
+          const tr=document.createElement("tr");
+          tr.innerHTML=`
+          <td>${c.id.substring(0, 6)}...</td><td>${c.name}</td><td>${c.vehicle}</td><td>${c.issue}</td><td>${c.location}</td>
+          <td><button class="mini" onclick="window.claimOrder('${c.id}')">Ambil</button></td>`;
+          ctbody.appendChild(tr);
+      });
+  }
+
+  // 3e. Render Orderan Saya (myOrders)
+  const otbody=document.getElementById("tblOrders");
+  otbody.innerHTML="";
+  if (STATE.myOrders.length === 0) {
+      otbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Anda belum mengambil orderan.</td></tr>'; 
+  } else {
+      STATE.myOrders.forEach(o=>{
+          const statusClass = o.status.toLowerCase().replace('-', ''); 
+          let statusText = o.status.charAt(0).toUpperCase() + o.status.slice(1).replace('-', ' ');
+          const totalDisplay = o.status === 'selesai' ? `Rp ${formatCurrency(o.total)}` : 'Belum selesai';
+
+          let actionButton = `<button class="btn-ghost" disabled>N/A</button>`;
+          let paymentStatusDisplay = `<span class="status wait">N/A</span>`;
+
+          if (o.status === 'in-progress') {
+            actionButton = `<button class="mini mini-finish" onclick="window.finishOrder('${o.id}')">Selesaikan</button>`;
+            paymentStatusDisplay = `<span class="status wait">N/A</span>`;
+          } 
+
+          if (o.status === 'selesai') {
+
+            // Logika Status Pembayaran
+            if (o.paymentStatus === 'lunas') {
+                paymentStatusDisplay = `<span class="status selesai">LUNAS</span>`;
+                actionButton = `<button class="btn-ghost" disabled>Selesai</button>`;
+            } else if (o.paymentStatus === 'menunggu_konfirmasi') {
+                paymentStatusDisplay = `<button class="mini mini-lunas" onclick="window.confirmPayment('${o.id}')">Konfirmasi LUNAS</button>`;
+                statusText = 'Selesai (Bayar)';
+                actionButton = `<button class="btn-ghost" disabled>Menunggu</button>`;
+            } else {
+                paymentStatusDisplay = `<span class="status danger">BELUM</span>`;
+                actionButton = `<button class="mini mini-finish" onclick="window.finishOrder('${o.id}')">Set Biaya</button>`;
+            }
+          }
+
+          const waLink = o.custWa ? `<a href="https://wa.me/${o.custWa.replace(/[^0-9]/g, '')}" target="_blank">${o.custWa}</a>` : '-';
+
+          const tr=document.createElement("tr");
+          tr.innerHTML=`
+          <td>${o.id.substring(0, 6)}...</td>
+          <td>${o.cust}</td>
+          <td>${waLink}</td> <td>${o.service}</td>
+          <td><span class="status ${statusClass}">${statusText}</span></td>
+          <td>${paymentStatusDisplay}</td> 
+          <td>${totalDisplay}</td>
+          <td>${actionButton}</td>`;
+          otbody.appendChild(tr);
+      });
+  }
+
+  // 3f. Kontrol Fitur PRO (Locked Overlay)
+  const lockOverlay = document.getElementById('sparepartLock');
+  if (lockOverlay) {
+      lockOverlay.style.display = STATE.shop.isPro ? 'none' : 'flex';
+  }
+}
+
+// =========================================================
+// 4. LOGIKA FIREBASE LISTENERS & FETCH
+// =========================================================
+
+async function fetchAndRenderProfile(uid, email) {
+
+    try {
+        const docRef = doc(db, "mekanik_users", uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            STATE.shop = {
+                name: data.shopName || "Nama Bengkel Belum Disetel",
+                address: data.shopAddress || "Alamat Belum Disetel",
+                wa: data.shopWA || "WA Belum Disetel",
+                isPro: data.isPro || false,
+                limit: data.isPro ? 999 : 10,
+                rating: data.rating || 0 
+            };
+        } else {
+            console.log("Dokumen mekanik baru tidak ditemukan. Membuat profil default.");
+
+            const defaultProfile = {
+                shopName: `Bengkel ${email.split('@')[0]}`, 
+                shopAddress: "Alamat belum diatur",
+                shopWA: "08XX-XXXX-XXXX",
+                isPro: false,
+                rating: 0, 
+                email: email,
+                createdAt: serverTimestamp() 
+            };
+
+            await setDoc(docRef, defaultProfile);
+
+            STATE.shop = {
+                name: defaultProfile.shopName,
+                address: defaultProfile.shopAddress,
+                wa: defaultProfile.shopWA,
+                isPro: defaultProfile.isPro,
+                limit: 10,
+                rating: defaultProfile.rating 
+            };
+
+            alert(`Selamat datang! Profil dasar Anda telah dibuat di Firestore.`);
+        }
+
+        render();
+
+    } catch (error) {
+        console.error("Gagal memuat atau membuat profil:", error);
+    }
+}
+
+// Mendengarkan Pesanan BARU (status: pending) secara Realtime
+function setupRealtimeNewOrderListener() {
+    const ordersRef = collection(db, "new_orders");
+    const q = query(ordersRef, where("status", "==", "pending"));
+
+    onSnapshot(q, (snapshot) => {
+        STATE.customers = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id, 
+                name: data.custName,
+                vehicle: data.vehicle || `${data.vehicleType} ${data.vehicleModel}`,
+                issue: data.issueType || data.issueDesc, 
+                location: data.custLocation,
+            };
+        });
+        render(); 
+    }, (error) => {
+        console.error("Gagal mendengarkan pesanan baru:", error);
+    });
+}
+
+// Mendengarkan Orderan SAYA (mekanikId: currentUserId) secara Realtime
+function setupRealtimeMyOrderListener(uid) {
+    const ordersRef = collection(db, "new_orders");
+    const q = query(ordersRef, where("mekanikId", "==", uid));
+
+    onSnapshot(q, (snapshot) => {
+        STATE.myOrders = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id, 
+                cust: data.custName,
+                custWa: data.custWA || 'Tidak Ada', 
+                service: data.issueType || data.issueDesc,
+                status: data.status,
+                total: data.total || 0,
+                paymentStatus: data.paymentStatus || null 
+            };
+        });
+        render(); 
+    }, (error) => {
+        console.error("Gagal mendengarkan orderan saya:", error);
+    });
+}
+
+// =========================================================
+// 5. FUNGSI LOGIKA (Update Firestore)
+// =========================================================
+
+window.claimOrder = async function(id){
+    if (!currentUserId) {
+        alert("Autentikasi gagal. Silakan login ulang.");
+        return;
+    }
+    const currentOrdersInProgress = STATE.myOrders.filter(o => o.status === 'in-progress').length;
+    const orderRef = doc(db, "new_orders", id);
+
+    // Batasan Akun STANDAR
+    if(!STATE.shop.isPro && currentOrdersInProgress >= STATE.shop.limit){
+        alert(`Batas ${STATE.shop.limit} order aktif tercapai. Upgrade ke PRO untuk batas lebih tinggi.`);
+        return;
+    }
+
+    if (!confirm(`Yakin ingin mengambil pesanan ID ${id.substring(0, 6)}?`)) {
+        return;
+    }
+
+    try {
+        // MENGGUNAKAN TRANSAKSI UNTUK MENCEGAH RACE CONDITION
+        await runTransaction(db, async (transaction) => {
+            const orderDoc = await transaction.get(orderRef);
+
+            if (!orderDoc.exists()) {
+                throw "Order tidak ditemukan.";
+            }
+
+            const currentStatus = orderDoc.data().status;
+
+            // Cek apakah status masih 'pending'
+            if (currentStatus !== "pending") {
+                throw "Order ini sudah diambil oleh mekanik lain atau sudah diproses."; 
+            }
+
+            // Lakukan update
+            transaction.update(orderRef, {
+                status: "in-progress",
+                mekanikId: currentUserId,
+                mekanikName: STATE.shop.name, 
+                claimTime: serverTimestamp()
+            });
+        });
+
+        alert(`Pesanan ${id.substring(0, 6)} berhasil Anda ambil!`);
+
+    } catch (error) {
+        console.error("Gagal mengambil pesanan:", error);
+
+        let userMessage = "Terjadi kesalahan saat mengambil pesanan. Coba lagi.";
+
+        if (typeof error === 'string') {
+            userMessage = error;
+        } else if (error.code && error.code === 'permission-denied') {
+            userMessage = "Akses ditolak (Masalah Izin Firestore). Hubungi Admin.";
+        }
+
+        alert(`Gagal mengambil pesanan: ${userMessage}`);
+    }
+}
+
+
+window.finishOrder = async function(id) {
+    const totalCostStr = prompt("Masukkan total biaya service (hanya angka):");
+    if (totalCostStr === null) return; 
+
+    const totalCost = parseInt(totalCostStr);
+
+    if (isNaN(totalCost) || totalCost <= 0) {
+        return alert("Input biaya tidak valid. Harus berupa angka positif.");
+    }
+
+    if (!confirm(`Yakin ingin menyelesaikan pesanan ${id.substring(0, 6)} dengan total Rp ${formatCurrency(totalCost)}? Status pembayaran akan direset.`)) {
+        return;
+    }
+
+    const orderRef = doc(db, "new_orders", id);
+    try {
+        await updateDoc(orderRef, {
+            status: "selesai",
+            total: totalCost,
+            paymentStatus: null, // Reset status pembayaran saat biaya di set
+            finishTime: serverTimestamp()
+        });
+        alert(`Order ${id.substring(0, 6)} berhasil diselesaikan dan Total Biaya dicatat!`);
+    } catch (error) {
+        console.error("Gagal menyelesaikan order:", error);
+        alert("Gagal menyelesaikan order. Silakan coba lagi.");
+    }
+
+}
+
+// FUNGSI BARU: KONFIRMASI PEMBAYARAN
+window.confirmPayment = async function(id) {
+    if (!confirm(`Yakin ingin mengkonfirmasi bahwa pesanan ${id.substring(0, 6)} SUDAH DIBAYAR LUNAS? Tindakan ini akan menyelesaikan order secara total.`)) {
+        return;
+    }
+
+    const orderRef = doc(db, "new_orders", id);
+    try {
+        await updateDoc(orderRef, {
+            paymentStatus: "lunas", // Status baru: LUNAS
+            paidTime: serverTimestamp()
+        });
+        alert(`Pembayaran order ${id.substring(0, 6)} berhasil dikonfirmasi LUNAS!`);
+    } catch (error) {
+        console.error("Gagal konfirmasi pembayaran:", error);
+        alert("Gagal mengkonfirmasi pembayaran. Silakan coba lagi.");
+    }
+}
+
+
+// =========================================================
+// 6. AUTENTIKASI DAN INISIALISASI
+// =========================================================
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUserId = user.uid;
+        currentUserEmail = user.email;
+        // 1. Ambil dan Render Profil Bengkel (termasuk isPro/limit)
+        fetchAndRenderProfile(user.uid, user.email); 
+        // 2. Setup Listener Pesanan Baru (Realtime)
+        setupRealtimeNewOrderListener();
+        // 3. Setup Listener Orderan Saya (Realtime)
+        setupRealtimeMyOrderListener(user.uid);
+
+        // Pasang event listener tombol Logout (biar lebih mudah)
+        document.getElementById('btnLogoutHeader').onclick = () => signOut(auth).then(() => {
+            // Anda harus membuat halaman login.html untuk pengalihan
+            window.location.href = "login.html"; 
+        });
+        document.getElementById('btnLogoutFooter').onclick = document.getElementById('btnLogoutHeader').onclick;
+
+        // Pasang event listener tombol Edit Profile (simulasi)
+        document.getElementById('btnEditProfile').onclick = () => alert("Fitur Edit Profil belum diimplementasikan.");
+        document.getElementById('btnUpgrade').onclick = () => alert("Fitur Upgrade ke PRO belum diimplementasikan.");
+        document.getElementById('btnUpgrade2').onclick = document.getElementById('btnUpgrade').onclick;
+
+
+    } else {
+        // User is signed out.
+        console.log("Tidak ada user login. Mengarahkan ke halaman login.");
+
+        document.getElementById('headerInfo').textContent = "Anda belum login.";
+        document.getElementById("shopName").textContent = "Tidak Login";
+
+        STATE.customers = [];
+        STATE.myOrders = [];
+        render(); 
+
+        // Simulasikan logout jika belum ada halaman login
+        document.getElementById('btnLogoutHeader').onclick = () => alert("Anda harus login untuk menggunakan dashboard ini. Mengarahkan ke login.html");
+        document.getElementById('btnLogoutFooter').onclick = document.getElementById('btnLogoutHeader').onclick;
+    }
+});
+</script>
+</body>
+</html>
