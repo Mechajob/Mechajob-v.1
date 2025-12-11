@@ -3,11 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrasi Mekanik - Mechajob</title>
+    <title>Registrasi Pelanggan - Mechajob</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* --- GAYA DASAR (Sama seperti sebelumnya) --- */
+        /* --- GAYA DASAR --- */
+        :root {
+            --orange: #ff9800;
+            --blue: #2a6ed4;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -21,8 +26,8 @@
 
         /* --- Header/Navigasi --- */
         .header {
-            background-color: #2a6ed4; 
-            box-shadow: 0 5px 0 0 orangered inset;
+            background-color: var(--blue); 
+            box-shadow: 0 5px 0 0 var(--orange) inset;
             padding: 10px 20px; 
             display: flex;
             justify-content: space-between ; 
@@ -85,11 +90,6 @@
             transition: background-color 0.3s; 
             font-size: 14px;
         }
-        .menu-item.login-register {
-            background-color: #ff9800; 
-            color: white;
-            font-weight: bold;
-        }
         .menu-item:hover { background-color: #f1f1f1; }
 
         /* --- Konten Utama (Formulir Registrasi) --- */
@@ -113,7 +113,7 @@
         }
         h2 {
             text-align: center;
-            color: #ff9800;
+            color: var(--blue); /* Warna utama customer: Biru */
             margin-bottom: 20px;
         }
         input {
@@ -126,7 +126,7 @@
             font-size: 16px;
         }
         button {
-            background: #2a6ed4;
+            background: var(--orange); /* Tombol Aksi: Oranye */
             color: white;
             border: none;
             padding: 12px;
@@ -139,7 +139,7 @@
             margin-top: 10px;
         }
         button:hover {
-            background: #1e5ab3;
+            background: #e58a00;
         }
         .form-box p {
             text-align: center;
@@ -147,17 +147,17 @@
             font-size: 14px;
         }
         .form-box a {
-            color: #ff9800;
+            color: var(--blue);
             text-decoration: none;
             font-weight: bold;
         }
         .info-box {
-            background-color: #fff3cd;
-            border-left: 5px solid #ff9800;
+            background-color: #d1ecf1;
+            border-left: 5px solid var(--blue);
             padding: 10px;
             margin-bottom: 15px;
             font-size: 13px;
-            color: #856404;
+            color: #0c5460;
         }
 
         /* --- Footer --- */
@@ -166,11 +166,11 @@
             color: white;
             padding: 30px 20px;
             text-align: center;
-            border-top: 5px solid orangered;
+            border-top: 5px solid var(--orange);
         }
 
         .footer-content { max-width: 900px; margin: 0 auto; }
-        .footer h3 { font-size: 18px; margin-top: 0; margin-bottom: 15px; color: #ff9800; }
+        .footer h3 { font-size: 18px; margin-top: 0; margin-bottom: 15px; color: var(--orange); }
         .footer p { font-size: 14px; margin-bottom: 5px; line-height: 1.5; }
 
         .social-links a {
@@ -181,7 +181,7 @@
             transition: color 0.3s;
         }
 
-        .social-links a:hover { color: #2a6ed4; }
+        .social-links a:hover { color: var(--blue); }
 
         .thank-you {
             margin-top: 20px;
@@ -209,37 +209,32 @@
 
         <div class="dropdown-menu">
             <a href="index.html" class="menu-item">Beranda</a>
-            <a href="login mekanik.html" class="menu-item">Login</a>
+            <a href="login-customer-auth.html" class="menu-item">Login Pelanggan</a>
+            <a href="login-mekanik.html" class="menu-item">Login Mekanik</a>
             <a href="Aduan.html" class="menu-item">Kontak Pengaduan</a>
-            <a href="tentang.html" class="menu-item">Tentang Kami</a>  
         </div>
 
     </div>
 
     <div class="main-content">
         <div class="form-box">
-            <h2><i class="fas fa-user-plus"></i> Registrasi Customer</h2>
+            <h2><i class="fas fa-user-plus"></i> Registrasi Pelanggan</h2>
 
             <div class="info-box">
-                **Nama Bengkel** akan otomatis dibuat: "Bengkel [Nama Lengkap Anda]". Anda dapat mengubahnya nanti di Dashboard.
+                Daftar untuk menyimpan riwayat pesanan Anda dan mendapatkan notifikasi terbaru!
             </div>
 
             <form id="registerForm">
-                <input type="text" id="namaReg" placeholder="Nama Lengkap Penanggung Jawab" required>
-
-                <input type="hidden" id="shopNameReg" name="shopName" value=""> 
-
+                <input type="text" id="fullNameReg" placeholder="Nama Lengkap" required>
                 <input type="email" id="emailReg" placeholder="Email (Digunakan untuk Login)" required>
                 <input type="password" id="passReg" placeholder="Kata Sandi (Min. 6 Karakter)" required minlength="6">
+                <input type="tel" id="phoneReg" placeholder="Nomor Telepon/WhatsApp (Cth: 081234567890)" required>
+                <input type="text" id="addressReg" placeholder="Alamat Rumah (Opsional)" >
 
-                <input type="text" id="shopAddressReg" placeholder="Alamat Lengkap Bengkel Anda" required>
-
-                <input type="tel" id="shopWAReg" placeholder="Nomor WhatsApp (Contoh: 081234567890)" required>
-
-                <button type="submit" id="btnReg">Daftar Sekarang</button>
+                <button type="submit" id="btnReg">Daftar Akun</button>
             </form>
 
-            <p>Sudah punya akun? <a href="login-customer.html">Masuk di sini</a></p>
+            <p>Sudah punya akun? <a href="login-customer-auth.html">Masuk di sini</a></p>
 
             <p class="back-link"><a href="index.html">Kembali ke Halaman Utama</a></p>
 
@@ -254,14 +249,13 @@
             <p>Alamat Kantor: online </p>
             <br>
             <div class="social-links">
-
                 <a href="www.facebook.com" title="Facebook"><i class="fab fa-facebook-f"></i></a> 
                 <a href="@Mechajob" title="Instagram"><i class="fab fa-instagram"></i></a> 
                 <a href="Mechajob" title="Twitter"><i class="fab fa-twitter"></i></a> 
             </div>
 
             <div class="thank-you">
-                Terima kasih telah memilih **Mechajob** untuk kebutuhan perbaikan kendaraan Anda.
+                Terima kasih telah memilih **Mechajob**.
                 <br>
                 &copy; 2025 Mechajob. Hak Cipta Dilindungi.
             </div>
@@ -290,70 +284,38 @@
         const auth = getAuth(app);
         const db = getFirestore(app); 
 
-
         // =========================================================
-        // 2. LOGIKA OTOMATISASI NAMA BENGKEL
-        // =========================================================
-        const namaInput = document.getElementById('namaReg');
-        const shopNameHiddenInput = document.getElementById('shopNameReg');
-
-        function autoFillShopName() {
-            let namaLengkap = namaInput.value.trim();
-
-            if (namaLengkap) {
-                shopNameHiddenInput.value = `Bengkel ${namaLengkap}`;
-            } else {
-                shopNameHiddenInput.value = '';
-            }
-        }
-
-        // Tambahkan event listener saat pengguna mengetik
-        namaInput.addEventListener('input', autoFillShopName);
-
-
-        // =========================================================
-        // 3. LOGIKA REGISTRASI FIREBASE
+        // 2. LOGIKA REGISTRASI FIREBASE
         // =========================================================
         document.getElementById("registerForm").addEventListener("submit", async (e) => {
             e.preventDefault(); 
 
-            // Panggil autofill sekali lagi untuk memastikan nilai akhir
-            autoFillShopName(); 
-
             const email = document.getElementById("emailReg").value;
             const password = document.getElementById("passReg").value;
-            const fullName = document.getElementById("namaReg").value;
-            const shopName = shopNameHiddenInput.value; 
-
-            // Ambil Nilai Input BARU
-            const shopAddress = document.getElementById("shopAddressReg").value; 
-            const shopWA = document.getElementById("shopWAReg").value; 
-
-            if (shopName.length < 5) {
-                alert("Nama Bengkel tidak valid. Pastikan Anda mengisi Nama Lengkap.");
-                return;
-            }
+            const fullName = document.getElementById("fullNameReg").value;
+            const phone = document.getElementById("phoneReg").value;
+            const address = document.getElementById("addressReg").value; 
 
             try {
                 // 1. Buat Akun Autentikasi
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // 2. Simpan Data Tambahan ke Firestore
-                await setDoc(doc(db, "mekanik_users", user.uid), {
+                // 2. Simpan Data Tambahan ke Firestore (Koleksi: customer_users)
+                await setDoc(doc(db, "customer_users", user.uid), {
+                    uid: user.uid,
                     fullName: fullName,
                     email: email,
-                    shopName: shopName,          // Nama Bengkel otomatis
-                    shopAddress: shopAddress,    // Data Baru
-                    shopWA: shopWA,              // Data Baru
-                    role: "mekanik", 
-                    isPro: false,
+                    phone: phone,          // Nomor Kontak
+                    address: address || "N/A", // Alamat (opsional)
+                    role: "customer", 
                     registrationDate: new Date()
                 });
 
-                alert(`Registrasi berhasil! Selamat datang, ${shopName}.`);
-                // Redirect ke halaman dashboard setelah sukses
-                window.location.href = "dashboard.html"; 
+                alert(`Registrasi berhasil! Selamat datang, ${fullName}. Anda dapat login sekarang.`);
+                
+                // Redirect ke halaman login customer
+                window.location.href = "login-customer-auth.html"; 
 
             } catch (error) {
                 // Penanganan Error
