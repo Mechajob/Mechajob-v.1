@@ -3,22 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cek Status Order - Mechajob</title>
+    <title>Login Mekanik - Mechajob</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         /* --- GAYA DASAR --- */
-        :root {
-            --orange: #ff9800; 
-            --blue: #2a6ed4; 
-            --bg: #f4f7f9;
-        }
-
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: var(--bg); 
+            background-color: #f4f7f9; 
             color: #333;
             min-height: 100vh;
             display: flex;
@@ -27,8 +21,8 @@
 
         /* --- Header/Navigasi --- */
         .header {
-            background-color: var(--blue); 
-            box-shadow: 0 5px 0 0 var(--orange) inset;
+            background-color: #2a6ed4; 
+            box-shadow: 0 5px 0 0 orangered inset;
             padding: 10px 20px; 
             display: flex;
             justify-content: space-between ; 
@@ -36,9 +30,10 @@
             position: relative; 
             height: 120px; 
         }
-        
-        /* LOGO STYLING */
+
+        /* LOGO STYLING (Asumsi Anda memiliki logo.png) */
         .header h1 { display: none; }
+
         .header .logo-link {
             text-decoration: none;
             display: flex;
@@ -49,6 +44,7 @@
             transform: translate(-50%, -50%); 
             z-index: 20; 
         }
+
         .header .logo {
             height: 80px; 
             width: auto; 
@@ -91,7 +87,7 @@
         }
         .menu-item:hover { background-color: #f1f1f1; }
 
-        /* --- Konten Utama (Formulir Cek Tiket) --- */
+        /* --- Konten Utama (Formulir Login) --- */
         .main-content {
             flex-grow: 1;
             display: flex;
@@ -107,11 +103,11 @@
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             width: 90%;
-            max-width: 400px; /* Dibuat sedikit lebih kecil */
+            max-width: 500px;
         }
         h2 {
             text-align: center;
-            color: var(--blue);
+            color: #2a6ed4;
             margin-bottom: 20px;
         }
         input {
@@ -122,10 +118,9 @@
             border: 1px solid #ccc;
             box-sizing: border-box;
             font-size: 16px;
-            text-transform: uppercase; /* ID Tiket biasanya huruf kapital */
         }
         button {
-            background: var(--blue); /* Warna biru untuk aksi utama customer */
+            background: #ff9800;
             color: white;
             border: none;
             padding: 12px;
@@ -138,7 +133,7 @@
             margin-top: 10px;
         }
         button:hover {
-            background: #1e57b3;
+            background: #f57c00;
         }
         .form-box p {
             text-align: center;
@@ -146,15 +141,9 @@
             font-size: 14px;
         }
         .form-box a {
-            color: var(--orange);
+            color: #2a6ed4;
             text-decoration: none;
             font-weight: bold;
-        }
-        .form-box .info-text {
-            text-align: center;
-            color: #666;
-            margin-bottom: 25px;
-            font-style: italic;
         }
 
         /* --- Footer --- */
@@ -163,11 +152,11 @@
             color: white;
             padding: 30px 20px;
             text-align: center;
-            border-top: 5px solid var(--orange);
+            border-top: 5px solid orangered;
         }
 
         .footer-content { max-width: 900px; margin: 0 auto; }
-        .footer h3 { font-size: 18px; margin-top: 0; margin-bottom: 15px; color: var(--orange); }
+        .footer h3 { font-size: 18px; margin-top: 0; margin-bottom: 15px; color: #ff9800; }
         .footer p { font-size: 14px; margin-bottom: 5px; line-height: 1.5; }
 
         .social-links a {
@@ -177,7 +166,8 @@
             text-decoration: none;
             transition: color 0.3s;
         }
-        .social-links a:hover { color: var(--blue); }
+
+        .social-links a:hover { color: #2a6ed4; }
 
         .thank-you {
             margin-top: 20px;
@@ -190,22 +180,22 @@
         /* Responsive */
         @media (max-width: 600px) {
             .header { height: 100px; }
-            .header .logo { height: 60px; }
-            .form-box { padding: 20px; }
+            .header .logo { height: 150px; }
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <a href="halaman-utama.html" class="logo-link">
-            <h1 style="color:white; font-size: 30px; margin:0;"><i class="fas fa-motorcycle"></i> Mechajob</h1>
+
+        <a href="halaman utama.html" class="logo-link">
+            <img src="logo.png" alt="Logo Mechajob" class="logo">
         </a>
         <div class="menu-icon">&#9776;</div> 
 
         <div class="dropdown-menu">
             <a href="index.html" class="menu-item">Beranda</a>
-            <a href="mekanik-login.html" class="menu-item">Login Mekanik</a>
+            <a href="registrasi.html" class="menu-item">customer-register</a>
             <a href="Aduan.html" class="menu-item">Kontak Pengaduan</a>
             <a href="tentang.html" class="menu-item">Tentang Kami</a>  
         </div>
@@ -214,16 +204,15 @@
 
     <div class="main-content">
         <div class="form-box">
-            <h2><i class="fas fa-ticket-alt"></i> Cek Status Pesanan Anda</h2>
-            
-            <p class="info-text">Masukkan ID Tiket yang Anda terima saat melakukan pemesanan.</p>
+            <h2><i class="fas fa-sign-in-alt"></i> Login Customer</h2>
 
-            <form id="ticketForm">
-                <input type="text" id="ticketId" placeholder="Contoh: XYZ12345" maxlength="20" required>
-                <button type="submit" id="btnCheck">Cek Status</button>
+            <form id="loginForm">
+                <input type="email" id="emailLog" placeholder="Email" required>
+                <input type="password" id="passLog" placeholder="Kata Sandi" required>
+                <button type="submit" id="btnLog">Masuk</button>
             </form>
 
-            <p>Belum punya ID Tiket? <a href="registrasi.html">Buat Order Baru</a></p>
+            <p>Belum punya akun? <a href="customer-register.html">Daftar Sekarang</a></p>
 
             <p class="back-link"><a href="index.html">Kembali ke Halaman Utama</a></p>
 
@@ -238,24 +227,25 @@
             <p>Alamat Kantor: online </p>
             <br>
             <div class="social-links">
+
                 <a href="www.facebook.com" title="Facebook"><i class="fab fa-facebook-f"></i></a> 
                 <a href="@Mechajob" title="Instagram"><i class="fab fa-instagram"></i></a> 
                 <a href="Mechajob" title="Twitter"><i class="fab fa-twitter"></i></a> 
             </div>
 
             <div class="thank-you">
-                Terima kasih telah memilih **Mechajob**.
+                Terima kasih telah memilih **Mechajob** untuk kebutuhan perbaikan kendaraan Anda.
                 <br>
                 &copy; 2025 Mechajob. Hak Cipta Dilindungi.
             </div>
         </div>
     </footer>
 
-    <script>
+    <script type="module">
         // --- LOGIKA MENU DROPDOWN ---
         const menuIcon = document.querySelector('.menu-icon');
         const dropdownMenu = document.querySelector('.dropdown-menu');
-        
+
         menuIcon.addEventListener('click', function(event) {
             event.stopPropagation(); 
             dropdownMenu.classList.toggle('active');
@@ -270,23 +260,44 @@
             }
         });
 
-        // --- LOGIKA FORM TICKET ---
-        document.getElementById("ticketForm").addEventListener("submit", (e) => {
-            e.preventDefault(); 
-            
-            const ticketId = document.getElementById("ticketId").value.toUpperCase().trim();
-            
-            if (ticketId) {
-                // Arahkan ke dashboard-customer.html dengan ID Tiket sebagai parameter URL
-                window.location.href = `dashboard-customer.html?ticketId=${ticketId}`;
-            } else {
-                alert("Mohon masukkan ID Tiket Anda.");
-            }
-        });
+        // --- LOGIKA FIREBASE ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js"; 
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
-        // Auto-uppercase input
-        document.getElementById("ticketId").addEventListener("input", function() {
-            this.value = this.value.toUpperCase();
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
+            authDomain: "mechajob-b7360.firebaseapp.com",
+            projectId: "mechajob-b7360",
+            storageBucket: "mechajob-b7360.firebasestorage.app",
+            messagingSenderId: "753002885541",
+            appId: "1:753002885541:web:96e4964dbd300193ff384c",
+            measurementId: "G-ZY3RS8WGP7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault(); 
+            const email = document.getElementById("emailLog").value;
+            const password = document.getElementById("passLog").value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                alert(`Login berhasil: ${email}`);
+                // Redirect ke dashboard mekanik
+                window.location.href = "mekanik.html"; 
+            } catch (error) {
+                let errorMessage = "Login gagal. Periksa kembali email dan kata sandi Anda.";
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    errorMessage = "Email atau Kata Sandi salah.";
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = "Format email tidak valid.";
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage = "Terlalu banyak percobaan gagal. Coba lagi sebentar.";
+                }
+                alert(`Login gagal: ${errorMessage}`);
+            }
         });
     </script>
 </body>
