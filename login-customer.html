@@ -1,47 +1,131 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cek Status Pesanan - Mechajob</title>
-    
+    <title>Cek Status Order - Mechajob</title>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
+        /* --- GAYA DASAR --- */
+        :root {
+            --orange: #ff9800; 
+            --blue: #2a6ed4; 
+            --bg: #f4f7f9;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f7f9; 
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg); 
             color: #333;
             min-height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: center;
             flex-direction: column;
-            padding: 20px;
         }
+
+        /* --- Header/Navigasi --- */
+        .header {
+            background-color: var(--blue); 
+            box-shadow: 0 5px 0 0 var(--orange) inset;
+            padding: 10px 20px; 
+            display: flex;
+            justify-content: space-between ; 
+            align-items: center;
+            position: relative; 
+            height: 120px; 
+        }
+        
+        /* LOGO STYLING */
+        .header h1 { display: none; }
+        .header .logo-link {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            position: absolute;
+            left: 50%;
+            top: 50%; 
+            transform: translate(-50%, -50%); 
+            z-index: 20; 
+        }
+        .header .logo {
+            height: 80px; 
+            width: auto; 
+            vertical-align: middle;
+        }
+
+        .menu-icon {
+            font-size: 30px;
+            color: white; 
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 30; 
+        }
+
+        /* --- Dropdown Menu --- */
+        .dropdown-menu {
+            display: none; 
+            position: absolute;
+            top: 100%; 
+            right: 0;
+            background-color: #ffffff;
+            min-width: 180px;
+            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+            z-index: 40; 
+        }
+
+        .dropdown-menu.active { display: block; }
+        .menu-item {
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block; 
+            color: #333;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.3s; 
+            font-size: 14px;
+        }
+        .menu-item:hover { background-color: #f1f1f1; }
+
+        /* --- Konten Utama (Formulir Cek Tiket) --- */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
         .form-box {
             background: #fff;
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             width: 90%;
-            max-width: 450px;
-            text-align: center;
+            max-width: 400px; /* Dibuat sedikit lebih kecil */
         }
         h2 {
-            color: #2a6ed4;
-            margin-bottom: 25px;
+            text-align: center;
+            color: var(--blue);
+            margin-bottom: 20px;
         }
         input {
             width: 100%;
             padding: 12px;
-            margin: 10px 0 20px 0;
+            margin: 10px 0;
             border-radius: 5px;
             border: 1px solid #ccc;
             box-sizing: border-box;
             font-size: 16px;
+            text-transform: uppercase; /* ID Tiket biasanya huruf kapital */
         }
         button {
-            background: #2a6ed4; /* Warna Biru */
+            background: var(--blue); /* Warna biru untuk aksi utama customer */
             color: white;
             border: none;
             padding: 12px;
@@ -51,43 +135,158 @@
             font-weight: bold;
             cursor: pointer;
             transition: background 0.3s;
+            margin-top: 10px;
         }
         button:hover {
-            background: #1e5ab3;
+            background: #1e57b3;
         }
-        .info {
+        .form-box p {
+            text-align: center;
             margin-top: 15px;
             font-size: 14px;
-            color: #6b7280;
+        }
+        .form-box a {
+            color: var(--orange);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .form-box .info-text {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+
+        /* --- Footer --- */
+        .footer {
+            background-color: #333;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 5px solid var(--orange);
+        }
+
+        .footer-content { max-width: 900px; margin: 0 auto; }
+        .footer h3 { font-size: 18px; margin-top: 0; margin-bottom: 15px; color: var(--orange); }
+        .footer p { font-size: 14px; margin-bottom: 5px; line-height: 1.5; }
+
+        .social-links a {
+            color: white;
+            margin: 0 10px;
+            font-size: 24px;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .social-links a:hover { color: var(--blue); }
+
+        .thank-you {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #555;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header { height: 100px; }
+            .header .logo { height: 60px; }
+            .form-box { padding: 20px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="form-box">
-        <h2><i class="fas fa-ticket-alt"></i> Cek Status Pesanan (ID Tiket)</h2>
-        
-        <form id="ticketForm">
-            <input type="text" id="ticketId" placeholder="Masukkan ID Tiket Anda (ID Dokumen)" required>
-            <button type="submit" id="btnCheckStatus">Cek Status</button>
-        </form>
-        
-        <p class="info">ID Tiket adalah ID unik pesanan Anda yang diberikan saat membuat permintaan.</p>
-        
+    <div class="header">
+        <a href="halaman-utama.html" class="logo-link">
+            <h1 style="color:white; font-size: 30px; margin:0;"><i class="fas fa-motorcycle"></i> Mechajob</h1>
+        </a>
+        <div class="menu-icon">&#9776;</div> 
+
+        <div class="dropdown-menu">
+            <a href="index.html" class="menu-item">Beranda</a>
+            <a href="mekanik-login.html" class="menu-item">Login Mekanik</a>
+            <a href="Aduan.html" class="menu-item">Kontak Pengaduan</a>
+            <a href="tentang.html" class="menu-item">Tentang Kami</a>  
+        </div>
+
     </div>
 
+    <div class="main-content">
+        <div class="form-box">
+            <h2><i class="fas fa-ticket-alt"></i> Cek Status Pesanan Anda</h2>
+            
+            <p class="info-text">Masukkan ID Tiket yang Anda terima saat melakukan pemesanan.</p>
+
+            <form id="ticketForm">
+                <input type="text" id="ticketId" placeholder="Contoh: XYZ12345" maxlength="20" required>
+                <button type="submit" id="btnCheck">Cek Status</button>
+            </form>
+
+            <p>Belum punya ID Tiket? <a href="registrasi.html">Buat Order Baru</a></p>
+
+            <p class="back-link"><a href="index.html">Kembali ke Halaman Utama</a></p>
+
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <h3>Hubungi Kami</h3>
+            <p>Email: Mechajob2@Gmail.com</p>
+            <p>Telepon (WhatsApp): (+62) 81543025933</p>
+            <p>Alamat Kantor: online </p>
+            <br>
+            <div class="social-links">
+                <a href="www.facebook.com" title="Facebook"><i class="fab fa-facebook-f"></i></a> 
+                <a href="@Mechajob" title="Instagram"><i class="fab fa-instagram"></i></a> 
+                <a href="Mechajob" title="Twitter"><i class="fab fa-twitter"></i></a> 
+            </div>
+
+            <div class="thank-you">
+                Terima kasih telah memilih **Mechajob**.
+                <br>
+                &copy; 2025 Mechajob. Hak Cipta Dilindungi.
+            </div>
+        </div>
+    </footer>
+
     <script>
-        document.getElementById("ticketForm").addEventListener("submit", function(e) {
+        // --- LOGIKA MENU DROPDOWN ---
+        const menuIcon = document.querySelector('.menu-icon');
+        const dropdownMenu = document.querySelector('.dropdown-menu');
+        
+        menuIcon.addEventListener('click', function(event) {
+            event.stopPropagation(); 
+            dropdownMenu.classList.toggle('active');
+        });
+
+        document.addEventListener('click', function(event) {
+            const isClickInsideMenu = dropdownMenu.contains(event.target);
+            const isClickOnIcon = menuIcon.contains(event.target);
+
+            if (!isClickInsideMenu && !isClickOnIcon) {
+                dropdownMenu.classList.remove('active');
+            }
+        });
+
+        // --- LOGIKA FORM TICKET ---
+        document.getElementById("ticketForm").addEventListener("submit", (e) => {
             e.preventDefault(); 
-            // Ambil nilai dari ID Tiket
-            const ticketId = document.getElementById("ticketId").value.trim();
+            
+            const ticketId = document.getElementById("ticketId").value.toUpperCase().trim();
             
             if (ticketId) {
-                // Redirect ke dashboard dengan ID Tiket sebagai parameter URL
+                // Arahkan ke dashboard-customer.html dengan ID Tiket sebagai parameter URL
                 window.location.href = `dashboard-customer.html?ticketId=${ticketId}`;
             } else {
                 alert("Mohon masukkan ID Tiket Anda.");
             }
+        });
+
+        // Auto-uppercase input
+        document.getElementById("ticketId").addEventListener("input", function() {
+            this.value = this.value.toUpperCase();
         });
     </script>
 </body>
