@@ -1,507 +1,458 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Status Orderan Anda - Mechajob</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Pelanggan - Mechajob</title>
 
-<style>
-  :root{
-    --orange:#ff9800; 
-    --blue:#2a6ed4; 
-    --bg:#f4f7f9; 
-    --card:#ffffff;
-    --muted:#6b7280; 
-    --success:#28a745; 
-    --danger:#dc3545;
-  }
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* --- Variabel Warna --- */
+        :root {
+            --orange: #ff9800;
+            --blue: #2a6ed4;
+            --light-bg: #f4f7f9;
+            --green: #4CAF50;
+            --red: #F44336;
+        }
 
-  *{box-sizing:border-box}
-  body{font-family:Arial,sans-serif;margin:0;background:var(--bg);color:#111; padding: 20px;}
-  .wrap{max-width:800px;margin:20px auto;}
+        /* --- GAYA DASAR --- */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg); 
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-  /* Header */
-  header{
-    text-align: center;
-    padding: 20px;
-    background: var(--blue);
-    color: white;
-    border-radius: 10px 10px 0 0;
-  }
-  header h1{margin:0;font-size:24px;}
+        /* --- Header/Navigasi --- */
+        .header {
+            background-color: var(--blue); 
+            box-shadow: 0 5px 0 0 var(--orange) inset;
+            padding: 10px 20px; 
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            position: relative; 
+            height: 100px; 
+        }
 
-  /* Status Card */
-  .card{background:var(--card);padding:25px;border-radius:0 0 10px 10px;box-shadow:0 6px 20px rgba(10,10,20,0.1); margin-bottom: 20px;}
+        .header .logo-link {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            position: absolute;
+            left: 50%;
+            top: 50%; 
+            transform: translate(-50%, -50%); 
+            z-index: 20; 
+        }
 
-  /* Info Grid */
-  .info-grid{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid #eee;
-  }
-  .info-item div:first-child{color:var(--muted);font-size:13px; margin-bottom: 4px;}
-  .info-item div:last-child{font-weight: bold; font-size: 16px;}
+        .header h1 { color: white; margin: 0; font-size: 24px; }
+        .menu-icon {
+            font-size: 30px;
+            color: white; 
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 30; 
+        }
 
-  /* Status Badge */
-  .status-badge{
-    display: inline-block;
-    padding: 8px 15px;
-    border-radius: 5px;
-    font-weight: 700;
-    font-size: 16px;
-    color: white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-  .status-badge.pending{background: var(--orange);}
-  .status-badge.in-progress{background: var(--blue);}
-  .status-badge.selesai{background: var(--success);}
-  .status-badge.lunas{background: var(--success);} /* LUNAS juga hijau */
-  .status-badge.dibatalkan{background: var(--danger);}
+        /* --- Dropdown Menu --- */
+        .dropdown-menu {
+            display: none; 
+            position: absolute;
+            top: 100%; 
+            right: 0;
+            background-color: #ffffff;
+            min-width: 180px;
+            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+            z-index: 40; 
+        }
+        .dropdown-menu.active { display: block; }
+        .menu-item {
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block; 
+            color: #333;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.3s; 
+            font-size: 14px;
+        }
+        .menu-item:hover { background-color: #f1f1f1; }
+        .logout-btn { color: var(--red); font-weight: bold; }
 
-  /* Step Indicator */
-  .steps-container {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 25px;
-      padding: 0 10px;
-  }
+        /* --- Konten Utama (Dashboard) --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 30px 20px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+        @media (min-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr 2fr; /* Profil di kiri, Daftar di kanan */
+            }
+        }
+        
+        .box {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        
+        /* Profil Card */
+        .profile-card h3 {
+            color: var(--blue);
+            margin-top: 0;
+            border-bottom: 2px solid var(--blue);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .profile-info p {
+            margin: 8px 0;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .profile-info i {
+            width: 25px;
+            color: var(--orange);
+        }
+        .profile-info strong {
+            font-weight: 600;
+        }
 
-  .step {
-      text-align: center;
-      flex-grow: 1;
-      position: relative;
-      color: var(--muted);
-      font-size: 13px;
-  }
+        /* Tombol Pesanan Baru */
+        .new-order-btn {
+            background-color: var(--green);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            width: 100%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 20px;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+        .new-order-btn:hover {
+            background: #45a049;
+        }
 
-  .step-icon {
-      width: 40px;
-      height: 40px;
-      line-height: 40px;
-      border-radius: 50%;
-      background: #ccc;
-      color: white;
-      margin: 0 auto 5px;
-      transition: all 0.3s;
-      font-size: 18px;
-  }
+        /* Daftar Riwayat */
+        .history-card h3 {
+            color: var(--orange);
+            margin-top: 0;
+            border-bottom: 2px solid var(--orange);
+            padding-bottom: 10px;
+        }
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .order-table th, .order-table td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .order-table th {
+            background-color: #f1f1f1;
+            font-weight: bold;
+            color: #555;
+        }
+        .order-table tr:hover {
+            background-color: #f9f9f9;
+        }
 
-  .step.active .step-icon {
-      background: var(--blue);
-      box-shadow: 0 0 0 3px rgba(42, 110, 212, 0.4);
-  }
+        /* Status Tags */
+        .status-tag {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            display: inline-block;
+        }
+        .status-tag.pending { background-color: #795548; }
+        .status-tag.in-progress { background-color: var(--blue); }
+        .status-tag.selesai { background-color: var(--green); }
+        .status-tag.batal { background-color: var(--red); }
+        .status-tag.lunas { background-color: #00bcd4; }
+        
+        /* Placeholder saat loading */
+        .loading-text {
+            text-align: center;
+            padding: 40px;
+            font-style: italic;
+            color: #777;
+        }
 
-  .step-line {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      right: 50%;
-      height: 2px;
-      background: #ccc;
-      z-index: -1;
-      transition: background 0.3s;
-  }
-
-  .step:not(:last-child) .step-line {
-      right: -50%;
-  }
-
-  .step.active + .step:before {
-      content: '';
-      position: absolute;
-      top: 20px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: var(--blue);
-      z-index: -1;
-  }
-
-  /* Mechanic Info */
-  .mechanic-info {
-      margin-top: 20px;
-      padding: 15px;
-      border: 1px solid #eee;
-      border-radius: 8px;
-      background: #f8fafc;
-  }
-
-  .mechanic-info i {
-      color: var(--blue);
-      margin-right: 8px;
-  }
-
-  .not-found {
-      text-align: center;
-      padding: 40px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  }
-
-  /* Tombol Pembayaran Baru */
-  #paymentActionBtn {
-      background-color: var(--success);
-      color: white;
-      padding: 15px 20px;
-      border: none;
-      border-radius: 8px;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 20px;
-      display: none; /* Default hidden */
-      transition: background-color 0.3s;
-  }
-  #paymentActionBtn:hover:not(:disabled) {
-      background-color: #1e7e34;
-  }
-  #paymentActionBtn:disabled {
-    cursor: not-allowed;
-    opacity: 0.8;
-  }
-</style>
+        /* --- Footer --- */
+        .footer {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-top: 5px solid var(--orange);
+        }
+    </style>
 </head>
 <body>
-<div class="wrap">
 
-    <header>
-        <h1><i class="fas fa-motorcycle"></i> Status Pesanan Anda</h1>
-        <p id="ticketIdDisplay" style="font-size: 16px; margin-top: 5px;">ID Tiket: **Memuat...**</p>
-    </header>
+    <div class="header">
+        <a href="index.html" class="logo-link">
+            <h1><i class="fas fa-motorcycle"></i> Mechajob</h1>
+        </a>
+        <div class="menu-icon"><i class="fas fa-user-circle"></i></div> 
 
-    <div id="content" class="card">
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div style="font-size: 20px; font-weight: bold;">Status Saat Ini:</div>
-            <div id="currentStatus">
-                <span class="status-badge pending">MEMUAT</span>
-            </div>
+        <div class="dropdown-menu">
+            <a href="customer-dashboard.html" class="menu-item"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="order-new.html" class="menu-item"><i class="fas fa-tools"></i> Buat Pesanan</a>
+            <a href="#" id="logoutBtn" class="menu-item logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>  
         </div>
+    </div>
+
+    <div class="main-content">
+        <h2 style="color: var(--blue); margin-top: 0;"><i class="fas fa-tachometer-alt"></i> Dashboard Pelanggan</h2>
+        <div id="loadingIndicator" class="loading-text">Memuat data pelanggan...</div>
+
+        <div class="dashboard-grid" style="display: none;" id="dashboardContent">
+            
+            <div class="profile-area">
+                <div class="box profile-card">
+                    <h3><i class="fas fa-id-card-alt" style="margin-right: 10px;"></i> Profil Saya</h3>
+                    <div class="profile-info" id="customerProfile">
+                        <p><i class="fas fa-user"></i> Nama: <strong id="profileFullName">N/A</strong></p>
+                        <p><i class="fas fa-envelope"></i> Email: <strong id="profileEmail">N/A</strong></p>
+                        <p><i class="fab fa-whatsapp"></i> Telepon: <strong id="profilePhone">N/A</strong></p>
+                        <p><i class="fas fa-map-marker-alt"></i> Alamat: <strong id="profileAddress">N/A</strong></p>
+                    </div>
+                </div>
+
+                <a href="order-new.html" class="new-order-btn">
+                    <i class="fas fa-plus-circle"></i> Pesan Layanan Baru Sekarang
+                </a>
+            </div>
+
+            <div class="history-card">
+                <div class="box">
+                    <h3><i class="fas fa-history" style="margin-right: 10px;"></i> Riwayat Pesanan Anda</h3>
+                    <div id="orderHistory">
+                        <table class="order-table">
+                            <thead>
+                                <tr>
+                                    <th>ID Tiket</th>
+                                    <th>Layanan</th>
+                                    <th>Tanggal</th>
+                                    <th>Status</th>
+                                    <th>Total Biaya</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orderListBody">
+                                </tbody>
+                        </table>
+                        <p id="noOrderMessage" style="text-align: center; color: #777; padding: 20px; display: none;">Anda belum memiliki riwayat pesanan.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2025 Mechajob. Hak Cipta Dilindungi.</p>
+    </footer>
+
+    <script type="module">
+        // =========================================================
+        // 1. KONFIGURASI DAN IMPOR FIREBASE
+        // =========================================================
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"; 
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
+            authDomain: "mechajob-b7360.firebaseapp.com",
+            projectId: "mechajob-b7360",
+            storageBucket: "mechajob-b7360.firebasestorage.app",
+            messagingSenderId: "753002885541",
+            appId: "1:753002885541:web:96e4964dbd300193ff384c",
+            measurementId: "G-ZY3RS8WGP7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const dashboardContent = document.getElementById('dashboardContent');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        // Fungsi Helper untuk format mata uang
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(amount);
+        };
         
-
-        <div class="steps-container">
-            <div class="step active" id="step1">
-                <div class="step-icon"><i class="fas fa-file-alt"></i></div>
-                Permintaan Dibuat
-                <div class="step-line"></div>
-            </div>
-            <div class="step" id="step2">
-                <div class="step-icon"><i class="fas fa-tools"></i></div>
-                Proses Pengerjaan
-                <div class="step-line"></div>
-            </div>
-            <div class="step" id="step3">
-                <div class="step-icon"><i class="fas fa-check-circle"></i></div>
-                Selesai / Pembayaran
-            </div>
-        </div>
-
-        <div class="info-grid">
-            <div class="info-item">
-                <div>Nama Pelanggan</div>
-                <div id="custName">Memuat...</div>
-            </div>
-            <div class="info-item">
-                <div>Kendaraan</div>
-                <div id="vehicleType">Memuat...</div>
-            </div>
-            <div class="info-item">
-                <div>Keluhan Utama</div>
-                <div id="issueDesc">Memuat...</div>
-            </div>
-            <div class="info-item">
-                <div>Waktu Permintaan</div>
-                <div id="createTime">Memuat...</div>
-            </div>
-            <div class="info-item" id="mechanicDiv">
-                <div>Mekanik Penanggung Jawab</div>
-                <div id="mechanicName">Menunggu klaim...</div>
-            </div>
-            <div class="info-item" id="totalDiv" style="display: none;">
-                <div>**TOTAL BIAYA**</div>
-                <div id="totalCost" style="color: var(--danger);">Memuat...</div>
-            </div>
-        </div>
-
-        <div class="mechanic-info" id="mechanicDetails" style="display: none;">
-            <div style="font-weight: bold; margin-bottom: 10px; color: var(--blue);"><i class="fas fa-id-badge"></i> Kontak Mekanik Anda:</div>
-            <p style="margin: 5px 0;"><i class="fas fa-user-cog"></i> **Nama Bengkel:** <span id="mShopName"></span></p>
-            <p style="margin: 5px 0;"><i class="fab fa-whatsapp"></i> **WhatsApp:** <span id="mShopWA"></span></p>
-        </div>
-
-        <button id="paymentActionBtn" style="display: none;">
-            <i class="fas fa-money-bill-wave"></i> Memuat Aksi Pembayaran...
-        </button>
-
-    </div>
-
-    <div id="notFound" class="not-found" style="display: none;">
-        <h2><i class="fas fa-exclamation-triangle"></i> Tiket Tidak Ditemukan</h2>
-        <p>ID Tiket yang Anda masukkan tidak valid atau belum terdaftar. Mohon periksa kembali ID tiket Anda.</p>
-        <a href="login-customer.html" style="background: var(--blue); color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block; margin-top: 15px;">Coba Lagi</a>
-    </div>
-
-</div>
-
-<script type="module">
-// =========================================================
-// 1. KONFIGURASI DAN IMPOR FIREBASE
-// **PERHATIAN: GANTI DENGAN KONFIGURASI FIREBASE ANDA YANG SEBENARNYA**
-// =========================================================
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { 
-    getFirestore, 
-    doc, 
-    onSnapshot,
-    getDoc,
-    updateDoc, 
-    serverTimestamp 
-} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"; 
-
-const firebaseConfig = {
-    apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
-    authDomain: "mechajob-b7360.firebaseapp.com",
-    projectId: "mechajob-b7360",
-    storageBucket: "mechajob-b7360.firebasestorage.app",
-    messagingSenderId: "753002885541",
-    appId: "1:753002885541:web:96e4964dbd300193ff384c",
-    measurementId: "G-ZY3RS8WGP7"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// Global state untuk menyimpan data order dan mekanik saat ini
-let currentOrderData = null;
-let currentMechanicWA = null; 
-
-// Helper function untuk format mata uang
-function formatCurrency(number) {
-    if (number === 0 || number === undefined || number === null) return 0;
-    return number.toLocaleString('id-ID');
-}
-
-// =========================================================
-// 2. LOGIKA UTAMA (GET TICKET ID & SETUP LISTENER)
-// =========================================================
-
-const urlParams = new URLSearchParams(window.location.search);
-// Gunakan 'ticketId' sebagai parameter URL. Contoh: dashboard-customer.html?ticketId=XYZ123
-const ticketId = urlParams.get('ticketId'); 
-const paymentActionBtn = document.getElementById('paymentActionBtn');
-
-if (!ticketId) {
-    document.getElementById('content').style.display = 'none';
-    document.getElementById('notFound').style.display = 'block';
-    document.getElementById('notFound').querySelector('h2').textContent = "Tidak Ada ID Tiket";
-    document.getElementById('notFound').querySelector('p').textContent = "Anda harus memasukkan ID Tiket untuk melihat status pesanan.";
-} else {
-    document.getElementById("ticketIdDisplay").innerHTML = `ID Tiket: **${ticketId}**`;
-    setupOrderListener(ticketId);
-}
-
-// =========================================================
-// 3. FUNGSI REAL-TIME LISTENER & RENDER
-// =========================================================
-
-function setupOrderListener(id) {
-    const orderRef = doc(db, "new_orders", id);
-
-    onSnapshot(orderRef, (docSnap) => {
-        if (docSnap.exists()) {
-            document.getElementById('content').style.display = 'block';
-            document.getElementById('notFound').style.display = 'none';
-
-            currentOrderData = docSnap.data(); // Simpan data global
-            renderStatus(currentOrderData, id); // Kirim ID juga untuk tombol
-        } else {
-            document.getElementById('content').style.display = 'none';
-            document.getElementById('notFound').style.display = 'block';
-        }
-    }, (error) => {
-        console.error("Gagal mendengarkan pesanan:", error);
-        alert("Terjadi kesalahan koneksi ke server. Coba muat ulang halaman.");
-        document.getElementById('content').style.display = 'none';
-        document.getElementById('notFound').style.display = 'block';
-    });
-}
-
-async function renderStatus(data, ticketId) {
-    const status = data.status || 'pending';
-    const paymentStatus = data.paymentStatus || null;
-    const statusDisplay = document.getElementById('currentStatus');
-    const steps = document.querySelectorAll('.step');
-
-    // 4a. Update Status Badge & Steps
-    const statusTextMap = {
-        'pending': 'MENUNGGU MEKANIK',
-        'in-progress': 'SEDANG DIKERJAKAN',
-        'selesai': (paymentStatus === 'menunggu_konfirmasi' ? 'MENUNGGU KONFIRMASI BAYAR' : 
-                   (paymentStatus === 'lunas' ? 'LUNAS & SELESAI' : 'SELESAI (MENUNGGU PEMBAYARAN)')),
-        'dibatalkan': 'DIBATALKAN'
-    };
-
-    // Sesuaikan statusClass untuk tampilan visual
-    let statusClass = status.toLowerCase().replace('-', '');
-    if (paymentStatus === 'lunas') statusClass = 'selesai'; 
-    else if (paymentStatus === 'menunggu_konfirmasi') statusClass = 'pending'; // Ubah menjadi pending agar badge oranye/biru 
-    else if (status === 'selesai' && paymentStatus === null) statusClass = 'danger'; // Gunakan danger jika selesai tapi belum bayar
-
-    statusDisplay.innerHTML = `<span class="status-badge ${statusClass}">${statusTextMap[status] || status.toUpperCase()}</span>`;
-
-    steps.forEach(step => step.classList.remove('active'));
-    document.getElementById('step1').classList.add('active'); 
-    if (status === 'in-progress' || status === 'selesai' || paymentStatus === 'lunas' || paymentStatus === 'menunggu_konfirmasi') {
-        document.getElementById('step2').classList.add('active');
-    }
-    if (status === 'selesai' || paymentStatus === 'lunas' || paymentStatus === 'menunggu_konfirmasi') {
-        document.getElementById('step3').classList.add('active');
-    }
-
-
-    // 4b. Update Detail Pesanan
-    document.getElementById('custName').textContent = data.custName || 'N/A';
-    document.getElementById('vehicleType').textContent = `${data.vehicleModel || 'N/A'} (${data.vehicleType || 'N/A'})`;
-    document.getElementById('issueDesc').textContent = data.issueDesc || 'N/A';
-
-    let createTime = 'N/A';
-    if (data.createdAt && data.createdAt.toDate) {
-        const date = data.createdAt.toDate();
-        createTime = date.toLocaleDateString('id-ID') + ' ' + date.toLocaleTimeString('id-ID');
-    }
-    document.getElementById('createTime').textContent = createTime;
-
-    // 4c. Update Detail Mekanik & Kontak
-    const mechanicDiv = document.getElementById('mechanicDetails');
-    const mechanicNameDisplay = document.getElementById('mechanicName');
-    currentMechanicWA = null; 
-
-    if (data.mekanikId) {
-        mechanicNameDisplay.textContent = data.mekanikName || 'Memuat detail mekanik...';
-        mechanicDiv.style.display = 'block';
-
-        // Ambil detail WA dari koleksi mekanik_users
-        try {
-            const mechanicDocRef = doc(db, "mekanik_users", data.mekanikId);
-            const mechanicSnap = await getDoc(mechanicDocRef);
-
-            if (mechanicSnap.exists()) {
-                const mData = mechanicSnap.data();
-                document.getElementById('mShopName').textContent = mData.shopName || 'Nama Bengkel Tidak Ditemukan';
-                document.getElementById('mShopWA').textContent = mData.shopWA || 'N/A';
-                currentMechanicWA = mData.shopWA; 
-            } else {
-                document.getElementById('mShopName').textContent = 'Detail Bengkel Tidak Ditemukan';
-                document.getElementById('mShopWA').textContent = 'N/A';
+        // Fungsi Helper untuk tag status
+        const getStatusTag = (status) => {
+            let className = '';
+            let text = status.toUpperCase();
+            switch(status) {
+                case 'pending': className = 'pending'; text = 'Menunggu Mekanik'; break;
+                case 'in-progress': className = 'in-progress'; text = 'Diproses'; break;
+                case 'selesai': className = 'selesai'; text = 'Selesai'; break;
+                case 'batal': className = 'batal'; text = 'Dibatalkan'; break;
+                default: className = 'pending';
             }
-        } catch (e) {
-            console.error("Gagal mengambil detail mekanik:", e);
+            return `<span class="status-tag ${className}">${text}</span>`;
+        };
+
+        // =========================================================
+        // 2. LOGIKA OTENTIKASI DAN MEMUAT DATA
+        // =========================================================
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User sudah login
+                loadCustomerProfile(user.uid);
+                loadOrderHistory(user.uid);
+            } else {
+                // User belum login, redirect ke halaman login
+                alert("Anda harus login sebagai pelanggan untuk mengakses dashboard.");
+                window.location.href = "login-customer-auth.html";
+            }
+        });
+
+        // --- Muat Data Profil Pelanggan ---
+        async function loadCustomerProfile(uid) {
+            try {
+                const docRef = doc(db, "customer_users", uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('profileFullName').textContent = data.fullName || 'N/A';
+                    document.getElementById('profileEmail').textContent = data.email || 'N/A';
+                    document.getElementById('profilePhone').textContent = data.phone || 'N/A';
+                    document.getElementById('profileAddress').textContent = data.address || 'N/A';
+
+                    loadingIndicator.style.display = 'none';
+                    dashboardContent.style.display = 'grid';
+                } else {
+                    console.error("Data profil pelanggan tidak ditemukan.");
+                    alert("Error: Data profil tidak ditemukan.");
+                }
+            } catch (error) {
+                console.error("Gagal memuat profil:", error);
+                alert("Gagal memuat data profil. Cek koneksi Anda.");
+            }
         }
 
-    } else {
-        mechanicNameDisplay.textContent = 'Menunggu Mekanik mengklaim pesanan.';
-        mechanicDiv.style.display = 'none';
-    }
+        // --- Muat Riwayat Pesanan ---
+        async function loadOrderHistory(uid) {
+            const orderListBody = document.getElementById('orderListBody');
+            const noOrderMessage = document.getElementById('noOrderMessage');
+            orderListBody.innerHTML = ''; // Kosongkan tabel
 
-    // 4d. Update Total Biaya & Tombol Bayar
-    const totalDiv = document.getElementById('totalDiv');
-    const totalCost = data.total || 0;
-    const totalCostFormatted = formatCurrency(totalCost);
+            try {
+                const q = query(
+                    collection(db, "new_orders"),
+                    where("customerUID", "==", uid),
+                    orderBy("orderTime", "desc") // Asumsi ada field orderTime
+                );
 
-    if (status === 'selesai' && totalCost > 0) {
-        totalDiv.style.display = 'block';
-        document.getElementById('totalCost').textContent = `Rp ${totalCostFormatted}`;
+                const querySnapshot = await getDocs(q);
 
-        // Tampilkan/sembunyikan tombol bayar berdasarkan paymentStatus
+                if (querySnapshot.empty) {
+                    noOrderMessage.style.display = 'block';
+                    return;
+                }
+                
+                noOrderMessage.style.display = 'none';
+                
+                querySnapshot.forEach((doc) => {
+                    const order = doc.data();
+                    const orderId = doc.id;
+                    const row = orderListBody.insertRow();
+                    
+                    const totalCost = order.total ? formatCurrency(order.total) : 'Belum Ditetapkan';
 
-        if (paymentStatus === 'lunas') {
-            paymentActionBtn.style.display = 'block';
-            paymentActionBtn.textContent = 'PEMBAYARAN LUNAS!';
-            paymentActionBtn.style.backgroundColor = 'var(--success)';
-            paymentActionBtn.disabled = true;
-        } else if (paymentStatus === 'menunggu_konfirmasi') {
-            paymentActionBtn.style.display = 'block';
-            paymentActionBtn.textContent = `Menunggu Konfirmasi Pembayaran dari Mekanik...`;
-            paymentActionBtn.style.backgroundColor = 'var(--orange)';
-            paymentActionBtn.disabled = true;
-        } else {
-            // Status selesai, biaya ada, tapi belum ada konfirmasi pembayaran
-            paymentActionBtn.style.display = 'block';
-            // PERUBAHAN TEKS TOMBOL
-            paymentActionBtn.textContent = `Saya Sudah Bayar Tunai/Transfer Manual (Rp ${totalCostFormatted})`;
-            paymentActionBtn.style.backgroundColor = 'var(--blue)'; // Warna biru untuk tombol aksi manual
-            paymentActionBtn.disabled = false;
+                    row.innerHTML = `
+                        <td>${orderId}</td>
+                        <td>${order.serviceType || 'Servis Umum'}</td>
+                        <td>${new Date(order.orderTime?.seconds * 1000).toLocaleDateString('id-ID') || 'N/A'}</td>
+                        <td>${getStatusTag(order.status)}</td>
+                        <td>${totalCost}</td>
+                        <td><a href="dashboard-customer.html?ticketId=${orderId}" target="_blank" style="color: var(--blue); font-weight: bold; text-decoration: none;">Lihat Detail</a></td>
+                    `;
+                });
+
+            } catch (error) {
+                console.error("Gagal memuat riwayat pesanan:", error);
+                // Tampilkan pesan error di tempat tabel
+                orderListBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: ${getComputedStyle(document.documentElement).getPropertyValue('--red')}">Gagal memuat data riwayat.</td></tr>`;
+            }
         }
 
-    } else {
-        totalDiv.style.display = 'none';
-        paymentActionBtn.style.display = 'none';
-    }
-}
-
-// =========================================================
-// 5. LOGIKA TOMBOL PEMBAYARAN (Diubah untuk aksi manual)
-// =========================================================
-paymentActionBtn.addEventListener('click', async () => {
-    if (currentMechanicWA && currentOrderData && currentOrderData.total > 0 && ticketId) {
-
-        const paymentStatus = currentOrderData.paymentStatus || null;
-
-        if (paymentStatus === 'menunggu_konfirmasi') {
-            alert("Anda sudah mengirim konfirmasi pembayaran. Mohon tunggu mekanik memprosesnya.");
-            return;
-        }
-
-        const totalFormatted = formatCurrency(currentOrderData.total);
-
-        const confirmPayment = confirm(`Anda akan menghubungi mekanik via WhatsApp untuk konfirmasi pembayaran total Rp ${totalFormatted}. Setelah Anda mentransfer/memberi tunai, Anda WAJIB kembali ke sini dan klik OK pada pesan ini untuk mengirim notifikasi ke mekanik. Lanjutkan ke WhatsApp?`);
-
-        if (!confirmPayment) return;
-
-        // 1. Logika WhatsApp (Membuka chat untuk konfirmasi)
-        const waNumber = currentMechanicWA.startsWith('62') ? currentMechanicWA : `62${currentMechanicWA.substring(1)}`;
-
-        const message = encodeURIComponent(
-            `Halo, saya sudah melakukan pembayaran untuk pesanan servis motor dengan ID Tiket *${ticketId}* atas nama *${currentOrderData.custName}* sebesar Rp ${totalFormatted}.` +
-            `\n\nMohon dicek dan dikonfirmasi sebagai LUNAS di dashboard Anda. Terima kasih.`
-        );
-
-        window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
-
-        // 2. TANDAI BAHWA PELANGGAN SUDAH MELAKUKAN INQUIRY/SIAP BAYAR
+        // =========================================================
+        // 3. LOGIKA UI & LOGOUT
+        // =========================================================
         
-        // Minta konfirmasi lagi setelah diarahkan ke WA
-        if (!confirm("PENTING: Apakah Anda sudah menghubungi mekanik dan menyelesaikan pembayaran (Tunai/Transfer)? Klik OK untuk mengirim notifikasi konfirmasi ke mekanik.")) {
-            return;
-        }
+        // Logika Menu Dropdown
+        const menuIcon = document.querySelector('.menu-icon');
+        const dropdownMenu = document.querySelector('.dropdown-menu');
 
-        try {
-             // Update status di Firestore
-            const orderRef = doc(db, "new_orders", ticketId);
-            await updateDoc(orderRef, {
-                paymentStatus: 'menunggu_konfirmasi', 
-                paymentInquiryTime: serverTimestamp()
-            });
+        menuIcon.addEventListener('click', function(event) {
+            event.stopPropagation(); 
+            dropdownMenu.classList.toggle('active');
+        });
 
-            // Tampilan akan diupdate otomatis oleh onSnapshot listener
+        document.addEventListener('click', function(event) {
+            const isClickInsideMenu = dropdownMenu.contains(event.target);
+            const isClickOnIcon = menuIcon.contains(event.target);
 
-            alert("Notifikasi konfirmasi pembayaran berhasil dikirim. Status order Anda telah diperbarui menjadi Menunggu Konfirmasi Mekanik.");
+            if (!isClickInsideMenu && !isClickOnIcon) {
+                dropdownMenu.classList.remove('active');
+            }
+        });
 
-        } catch (e) {
-            console.error("Gagal update status pembayaran:", e);
-            alert("Gagal memperbarui status order di server. Silakan coba lagi.");
-        }
-
-    } else {
-        alert("Gagal memproses. Detail Mekanik atau Total Biaya belum lengkap.");
-    }
-});
-</script>
+        // Logika Logout
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await signOut(auth);
+                alert("Anda berhasil logout.");
+                window.location.href = "index.html";
+            } catch (error) {
+                console.error("Logout gagal:", error);
+                alert("Logout gagal. Coba lagi.");
+            }
+        });
+    </script>
 </body>
 </html>
