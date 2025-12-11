@@ -286,7 +286,7 @@
                 await signInWithEmailAndPassword(auth, email, password);
                 alert(`Login berhasil: ${email}`);
                 // Redirect ke dashboard mekanik
-                window.location.href = "mekanik.html"; 
+                window.location.href = "dashboard-mekanik.html"; 
             } catch (error) {
                 let errorMessage = "Login gagal. Periksa kembali email dan kata sandi Anda.";
                 if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
