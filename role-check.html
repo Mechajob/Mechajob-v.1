@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memverifikasi Peran - Mechajob</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* --- GAYA TAMPILAN PEMERIKSAAN --- */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #2a6ed4; /* Biru Mechajob */
+            color: white;
+            flex-direction: column;
+            text-align: center;
+            margin: 0;
+        }
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #ff9800; /* Oranye Mechajob */
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1.5s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+        p {
+            margin-top: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="spinner"></div>
+    <h2><i class="fas fa-user-lock"></i> Memverifikasi Peran Anda...</h2>
+    <p>Mohon tunggu sebentar. Kami sedang mengidentifikasi jenis akun Anda.</p>
+
+    <script type="module">
+        // =========================================================
+        // 1. KONFIGURASI DAN IMPOR FIREBASE
+        // =========================================================
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"; 
+
+        // GANTI DENGAN KONFIGURASI FIREBASE ANDA YANG SEBENARNYA
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_pygYC3UubxRWZScPO-GveCi8jh_zkdc",
+            authDomain: "mechajob-b7360.firebaseapp.com",
+            projectId: "mechajob-b7360",
+            storageBucket: "mechajob-b7360.firebasestorage.app",
+            messagingSenderId: "753002885541",
+            appId: "1:753002885541:web:96e4964dbd300193ff384c",
+            measurementId: "G-ZY3RS8WGP7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // =========================================================
+        // 2. FUNGSI UTAMA PEMERIKSAAN PERAN
+        // =========================================================
+        async function checkUserRole(user) {
+            const uid = user.uid;
+
+            try {
+                // 1. Cek di koleksi Mekanik (Prioritas 1)
+                const mekanikDocRef = doc(db, "mekanik_users", uid);
+                const mekanikSnap = await getDoc(mekanikDocRef);
+
+                if (mekanikSnap.exists()) {
+                    console.log("Pengguna teridentifikasi sebagai Mekanik.");
+                    window.location.href = "mekanik-dashboard.html"; 
+                    return; // Hentikan eksekusi
+                }
+
+                // 2. Cek di koleksi Customer (Prioritas 2)
+                const customerDocRef = doc(db, "customer_users", uid);
+                const customerSnap = await getDoc(customerDocRef);
+
+                if (customerSnap.exists()) {
+                    console.log("Pengguna teridentifikasi sebagai Pelanggan.");
+                    window.location.href = "customer-dashboard.html"; 
+                    return; // Hentikan eksekusi
+                }
+
+                // 3. Jika tidak ditemukan di kedua koleksi
+                console.warn(`UID ${uid} ditemukan di Auth tetapi tidak ada dokumen peran di Firestore.`);
+                alert("Kesalahan Autorisasi: Akun Anda tidak memiliki peran terdaftar. Silakan hubungi Admin.");
+                
+                // Logout pengguna yang tidak teridentifikasi perannya
+                await signOut(auth);
+                window.location.href = "index.html";
+
+            } catch (error) {
+                console.error("Gagal memeriksa peran pengguna:", error);
+                alert("Terjadi kesalahan saat verifikasi peran. Coba login ulang.");
+                await signOut(auth);
+                window.location.href = "index.html";
+            }
+        }
+
+        // =========================================================
+        // 3. PENANGANAN STATUS AUTENTIKASI
+        // =========================================================
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Jika user sudah login (berhasil diautentikasi)
+                checkUserRole(user);
+            } else {
+                // Jika tidak ada user (pengguna belum login atau sesi habis)
+                console.log("Pengguna belum login, mengarahkan ke halaman utama.");
+                alert("Sesi berakhir atau Anda belum login.");
+                window.location.href = "index.html"; 
+            }
+        });
+    </script>
+</body>
+</html>
