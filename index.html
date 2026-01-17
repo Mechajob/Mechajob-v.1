@@ -3,138 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Mekanik TP - Firebase Live</title>
-
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-
+    <title>Manajemen Mekanik TP - Modular</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f0f2f5; margin: 0; padding: 10px; color: #333; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        :root {
+            --primary: #d32f2f;
+            --secondary: #1976d2;
+            --success: #2e7d32;
+            --bg: #f8fafc;
+            --text: #334155;
+        }
 
-        h2 { text-align: center; color: #d32f2f; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        * { box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
         
-        /* Navigasi */
-        .menu-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; min-width: 90px; padding: 12px; border: none; background: #e0e0e0; cursor: pointer; font-weight: bold; border-radius: 8px; transition: 0.3s; }
-        .tab-btn.active { background: #d32f2f; color: white; box-shadow: 0 4px 6px rgba(211, 47, 47, 0.3); }
+        body { background-color: var(--bg); margin: 0; padding: 15px; color: var(--text); }
 
-        /* Konten */
-        .content-section { display: none; border-top: 1px solid #eee; padding-top: 20px; }
-        .content-section.active { display: block; }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
 
-        /* Form */
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
-        select, textarea, button { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; outline: none; }
-        select:focus, textarea:focus { border-color: #d32f2f; }
-        .row-flex { display: flex; gap: 10px; }
+        h2 { text-align: center; color: var(--primary); margin-bottom: 20px; font-weight: 800; }
+
+        /* Menu Tabs */
+        .tabs {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #64748b;
+            transition: 0.2s;
+            border-radius: 8px;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        /* Content Sections */
+        .content { display: none; }
+        .content.active { display: block; }
+
+        /* Form Styling */
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
+        select, textarea, .btn-save {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+        }
+        select:focus, textarea:focus { border-color: var(--primary); outline: none; }
+        .row { display: flex; gap: 8px; }
         
-        /* Tabel */
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 5px; background: #fff; }
-        th, td { border: 1px solid #eee; padding: 12px; text-align: left; }
-        th { background: #f8f9fa; color: #666; font-size: 13px; text-transform: uppercase; }
-        tr:hover { background-color: #f9f9f9; }
+        .btn-save {
+            background: var(--success);
+            color: white;
+            border: none;
+            font-weight: bold;
+            margin-top: 10px;
+            cursor: pointer;
+        }
 
-        /* Tombol & Badge */
-        .btn-submit { background: #2e7d32; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-submit:hover { background: #1b5e20; }
-        .btn-selesai { background: #0288d1; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
-        .btn-selesai:hover { background: #01579b; }
+        /* Card Styling */
+        .card {
+            background: #fff;
+            border: 1px solid #f1f5f9;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .bus-info b { font-size: 16px; color: var(--primary); display: block; }
+        .bus-info span { font-size: 14px; font-weight: 500; }
+        .bus-info small { color: #94a3b8; display: block; margin-top: 2px; }
         
-        .status-done { color: #2e7d32; font-weight: bold; font-size: 12px; background: #e8f5e9; padding: 4px 8px; border-radius: 4px; }
-        .tgl-kecil { font-size: 11px; color: #999; display: block; margin-top: 4px; }
-        .bus-id { font-size: 16px; color: #d32f2f; }
+        .btn-done {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .history-card { border-left: 4px solid var(--success); opacity: 0.8; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>🛠️ Mekanik Bus TP</h2>
+    <h2>🛠️ Mekanik TP</h2>
 
-    <div class="menu-tabs">
-        <button class="tab-btn active" onclick="openTab('daftar', this)">Pekerjaan</button>
-        <button class="tab-btn" onclick="openTab('input', this)">Input Baru</button>
-        <button class="tab-btn" onclick="openTab('riwayat', this)">Riwayat</button>
+    <div class="tabs">
+        <button class="tab-btn active" data-target="tab-daftar">Pekerjaan</button>
+        <button class="tab-btn" data-target="tab-input">Input</button>
+        <button class="tab-btn" data-target="tab-riwayat">Riwayat</button>
     </div>
 
-    <div id="daftar" class="content-section active">
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Bus</th>
-                        <th>Perbaikan</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="tabelAktif">
-                    <tr><td colspan="3" style="text-align:center">Menghubungkan ke database...</td></tr>
-                </tbody>
-            </table>
-        </div>
+    <div id="tab-daftar" class="content active">
+        <div id="listPekerjaan">Memuat data...</div>
     </div>
 
-    <div id="input" class="content-section">
-        <form id="pekerjaanForm">
+    <div id="tab-input" class="content">
+        <form id="mechanicForm">
             <div class="form-group">
-                <label>Nomor Lambung (TP)</label>
-                <div class="row-flex">
-                    <select id="kodeL" required>
-                        <option value="">Kode</option>
+                <label>Nomor Lambung</label>
+                <div class="row">
+                    <select id="prefix" required>
                         <option value="A1">A1</option><option value="A2">A2</option><option value="A3">A3</option><option value="A4">A4</option>
                         <option value="B1">B1</option><option value="B2">B2</option><option value="B3">B3</option><option value="B4">B4</option>
                         <option value="C1">C1</option><option value="C2">C2</option><option value="C3">C3</option><option value="C4">C4</option>
                         <option value="BS">BS</option><option value="CAD">CAD</option>
                     </select>
-                    <select id="nomorL" required>
-                        <option value="">No</option>
+                    <select id="number" required>
                         <option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option>
                     </select>
                 </div>
             </div>
             <div class="form-group">
                 <label>Jenis Perbaikan</label>
-                <select id="jenisP" required>
-                    <option value="">-- Pilih Jenis --</option>
+                <select id="jobType" required>
                     <option value="Ganti Oli">Ganti Oli</option>
-                    <option value="Service Rem">Service Rem</option>
+                    <option value="Rem">Rem</option>
                     <option value="Kopling">Kopling</option>
                     <option value="Kelistrikan">Kelistrikan</option>
-                    <option value="AC Bus">Service AC</option>
-                    <option value="Kaki-kaki">Kaki-kaki / Ban</option>
-                    <option value="Mesin">Perbaikan Mesin</option>
-                    <option value="Lain-lain">Lain-lain</option>
+                    <option value="Mesin">Mesin</option>
+                    <option value="AC">AC</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Keterangan Tambahan</label>
-                <textarea id="ket" rows="3" placeholder="Contoh: Ganti kampas rem roda belakang kiri..."></textarea>
+                <label>Keterangan</label>
+                <textarea id="note" rows="2"></textarea>
             </div>
-            <button type="submit" class="btn-submit">SIMPAN KE DATABASE</button>
+            <button type="submit" class="btn-save">SIMPAN DATA</button>
         </form>
     </div>
 
-    <div id="riwayat" class="content-section">
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Bus & Tanggal</th>
-                        <th>Pekerjaan</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="tabelRiwayat"></tbody>
-            </table>
-        </div>
+    <div id="tab-riwayat" class="content">
+        <div id="listRiwayat"></div>
     </div>
 </div>
 
-<script>
-    // 1. KONFIGURASI FIREBASE (Ganti databaseURL jika perlu)
+<script type="module">
+    // Import SDK Modular
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, update } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+
+    // Konfigurasi Anda
     const firebaseConfig = {
         apiKey: "AIzaSyDCMPDUZc21Mgc0GtDSyyBCbSaJFvdYYAU",
         authDomain: "list-mekanik.firebaseapp.com",
@@ -142,94 +180,80 @@
         storageBucket: "list-mekanik.firebasestorage.app",
         messagingSenderId: "578557706347",
         appId: "1:578557706347:web:37e6cb783889a6c07b312e",
-        // Cek link ini di dashboard Firebase Anda
-        databaseURL: "https://list-mekanik-default-rtdb.firebaseio.com" 
+        databaseURL: "https://list-mekanik-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
 
-    // 2. INITIALIZE
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    // Inisialisasi
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    // 3. FUNGSI NAVIGASI TAB
-    function openTab(tabId, btn) {
-        // Sembunyikan semua section
-        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        // Nonaktifkan semua tombol
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        
-        // Aktifkan yang dipilih
-        document.getElementById(tabId).classList.add('active');
-        btn.classList.add('active');
-    }
-
-    // 4. SIMPAN DATA KE FIREBASE
-    document.getElementById('pekerjaanForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const lambung = `TP-${document.getElementById('kodeL').value}-${document.getElementById('nomorL').value}`;
-
-        database.ref('tugas').push({
-            lambung: lambung,
-            pekerjaan: document.getElementById('jenisP').value,
-            keterangan: document.getElementById('ket').value,
-            tanggal: new Date().toLocaleString('id-ID'),
-            status: 'Aktif'
-        })
-        .then(() => {
-            alert('Berhasil: ' + lambung + ' telah ditambahkan.');
-            document.getElementById('pekerjaanForm').reset();
-            // Pindah ke tab daftar secara otomatis
-            const btnDaftar = document.querySelectorAll('.tab-btn')[0];
-            openTab('daftar', btnDaftar);
-        })
-        .catch((err) => {
-            alert('Gagal simpan! Periksa koneksi atau Rules Firebase Anda.');
-            console.error(err);
-        });
+    // Navigasi Tab
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(btn => {
+        btn.onclick = () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.target).classList.add('active');
+        };
     });
 
-    // 5. BACA DATA SECARA REALTIME
-    database.ref('tugas').on('value', (snapshot) => {
-        const tabelAktif = document.getElementById('tabelAktif');
-        const tabelRiwayat = document.getElementById('tabelRiwayat');
+    // Simpan Data
+    document.getElementById('mechanicForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const lambung = `TP-${document.getElementById('prefix').value}-${document.getElementById('number').value}`;
         
-        tabelAktif.innerHTML = "";
-        tabelRiwayat.innerHTML = "";
-
-        if (!snapshot.exists()) {
-            tabelAktif.innerHTML = "<tr><td colspan='3' style='text-align:center'>Antrian Kosong</td></tr>";
-            return;
+        try {
+            await push(ref(db, 'tugas'), {
+                lambung,
+                pekerjaan: document.getElementById('jobType').value,
+                keterangan: document.getElementById('note').value,
+                tanggal: new Date().toLocaleString('id-ID'),
+                status: 'Aktif'
+            });
+            alert('Tersimpan!');
+            document.getElementById('mechanicForm').reset();
+            tabs[0].click(); // Balik ke tab daftar
+        } catch (err) {
+            alert('Gagal: ' + err.message);
         }
+    };
+
+    // Baca Data Realtime
+    onValue(ref(db, 'tugas'), (snapshot) => {
+        const listPekerjaan = document.getElementById('listPekerjaan');
+        const listRiwayat = document.getElementById('listRiwayat');
+        listPekerjaan.innerHTML = "";
+        listRiwayat.innerHTML = "";
 
         snapshot.forEach((child) => {
-            const data = child.val();
+            const item = child.val();
             const id = child.key;
+            const html = `
+                <div class="card ${item.status === 'Selesai' ? 'history-card' : ''}">
+                    <div class="bus-info">
+                        <b>${item.lambung}</b>
+                        <span>${item.pekerjaan}</span>
+                        <small>${item.status === 'Aktif' ? (item.keterangan || '') : item.tanggal}</small>
+                    </div>
+                    ${item.status === 'Aktif' ? `<button class="btn-done" data-id="${id}">Selesai</button>` : ''}
+                </div>`;
 
-            if (data.status === 'Aktif') {
-                tabelAktif.innerHTML += `
-                    <tr>
-                        <td><strong class="bus-id">${data.lambung}</strong></td>
-                        <td>${data.pekerjaan}<br><small style="color:#666">${data.keterangan || '-'}</small></td>
-                        <td><button class="btn-selesai" onclick="setSelesai('${id}')">Selesai</button></td>
-                    </tr>`;
-            } else {
-                tabelRiwayat.innerHTML += `
-                    <tr>
-                        <td><strong>${data.lambung}</strong><span class="tgl-kecil">${data.tanggal}</span></td>
-                        <td>${data.pekerjaan}</td>
-                        <td><span class="status-done">SELESAI</span></td>
-                    </tr>`;
-            }
+            if (item.status === 'Aktif') listPekerjaan.innerHTML += html;
+            else listRiwayat.innerHTML += html;
         });
-    });
 
-    // 6. UPDATE STATUS KE SELESAI
-    function setSelesai(id) {
-        if(confirm('Tandai bus ini sudah selesai diperbaiki?')) {
-            database.ref('tugas/' + id).update({
-                status: 'Selesai'
-            });
-        }
-    }
+        // Event listener untuk tombol selesai (delegasi)
+        document.querySelectorAll('.btn-done').forEach(btn => {
+            btn.onclick = () => {
+                if(confirm('Pekerjaan selesai?')) {
+                    update(ref(db, `tugas/${btn.dataset.id}`), { status: 'Selesai' });
+                }
+            };
+        });
+
+        if(!listPekerjaan.innerHTML) listPekerjaan.innerHTML = "<p align='center'>Kosong</p>";
+    });
 </script>
 </body>
 </html>
