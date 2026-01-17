@@ -20,6 +20,7 @@ h2{text-align:center;color:var(--primary)}
 .content{display:none}
 .content.active{display:block}
 select,textarea,button{width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:1px solid #ccc}
+.row{display:flex;gap:8px}
 .card{background:#fff;border:1px solid #ddd;padding:12px;border-radius:8px;margin-bottom:8px}
 .btn{border:none;border-radius:6px;padding:6px 10px;font-weight:bold}
 .done{background:#1976d2;color:#fff}
@@ -42,11 +43,22 @@ small{color:#777}
 <div id="list" class="content active"></div>
 
 <div id="input" class="content">
-<select id="bus">
-<option>TP-A1-01</option><option>TP-A1-02</option>
-<option>TP-A2-01</option><option>TP-B1-01</option>
+
+<label>Nomor Lambung</label>
+<div class="row">
+<select id="prefix">
+<option>A1</option><option>A2</option><option>A3</option><option>A4</option>
+<option>B1</option><option>B2</option><option>B3</option><option>B4</option>
+<option>BS</option><option>CAD</option>
 </select>
 
+<select id="number">
+<option>01</option><option>02</option><option>03</option><option>04</option><option>05</option>
+<option>06</option><option>07</option><option>08</option><option>09</option><option>10</option>
+</select>
+</div>
+
+<label>Jenis Pekerjaan</label>
 <select id="job">
 <option>Ganti Oli</option>
 <option>Sistem Rem</option>
@@ -55,7 +67,9 @@ small{color:#777}
 <option>Mesin</option>
 </select>
 
-<textarea id="note" placeholder="Keterangan kerusakan..."></textarea>
+<label>Keterangan</label>
+<textarea id="note" placeholder="Detail kerusakan..."></textarea>
+
 <button class="btn save" onclick="simpan()">SIMPAN DATA</button>
 </div>
 
@@ -74,9 +88,9 @@ function tab(id,btn){
 }
 
 function simpan(){
- if(!bus.value || !job.value) return alert("Lengkapi data!");
+ const lambung = `TP-${prefix.value}-${number.value}`;
  data.push({
-  bus:bus.value,
+  lambung,
   job:job.value,
   note:note.value,
   time:new Date().toLocaleString("id-ID"),
@@ -89,7 +103,7 @@ function simpan(){
 }
 
 function selesai(i){
- if(confirm("Tandai selesai?")){
+ if(confirm("Tandai bus selesai diperbaiki?")){
   data[i].status="Selesai";
   localStorage.setItem("mekanikTP",JSON.stringify(data));
   render();
@@ -105,7 +119,7 @@ function render(){
  }
  data.forEach((d,i)=>{
   let card=`<div class="card">
-   <b>${d.bus}</b><br>
+   <b>${d.lambung}</b><br>
    ${d.job}<br>
    <small>${d.note||'-'}</small><br>
    <small>${d.time}</small><br>`;
@@ -119,7 +133,7 @@ function render(){
 }
 render();
 
-// Register Service Worker
+// PWA
 if ('serviceWorker' in navigator) {
  navigator.serviceWorker.register('service-worker.js');
 }
