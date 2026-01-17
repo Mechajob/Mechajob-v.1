@@ -3,37 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Mekanik TP - Live</title>
-    
+    <title>Sistem Mekanik TP - Firebase Live</title>
+
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #f0f2f5; margin: 0; padding: 10px; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
-        h2 { text-align: center; color: #d32f2f; margin-bottom: 15px; }
-        .menu-tabs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; min-width: 90px; padding: 10px; border: none; background: #e0e0e0; cursor: pointer; font-weight: bold; border-radius: 5px; }
-        .tab-btn.active { background: #d32f2f; color: white; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; margin: 0; padding: 10px; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 
-        .content-section { display: none; }
+        h2 { text-align: center; color: #d32f2f; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Navigasi */
+        .menu-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; min-width: 90px; padding: 12px; border: none; background: #e0e0e0; cursor: pointer; font-weight: bold; border-radius: 8px; transition: 0.3s; }
+        .tab-btn.active { background: #d32f2f; color: white; box-shadow: 0 4px 6px rgba(211, 47, 47, 0.3); }
+
+        /* Konten */
+        .content-section { display: none; border-top: 1px solid #eee; padding-top: 20px; }
         .content-section.active { display: block; }
 
+        /* Form */
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        select, textarea, button { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
-        .row-flex { display: flex; gap: 8px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+        select, textarea, button { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; outline: none; }
+        select:focus, textarea:focus { border-color: #d32f2f; }
+        .row-flex { display: flex; gap: 10px; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background: #f8f9fa; }
+        /* Tabel */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; background: #fff; }
+        th, td { border: 1px solid #eee; padding: 12px; text-align: left; }
+        th { background: #f8f9fa; color: #666; font-size: 13px; text-transform: uppercase; }
+        tr:hover { background-color: #f9f9f9; }
 
-        .btn-submit { background: #2e7d32; color: white; border: none; font-weight: bold; cursor: pointer; }
-        .btn-selesai { background: #1976d2; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; width: auto; }
-        .status-done { color: #2e7d32; font-weight: bold; }
-        .tgl-kecil { font-size: 11px; color: #777; display: block; }
+        /* Tombol & Badge */
+        .btn-submit { background: #2e7d32; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-submit:hover { background: #1b5e20; }
+        .btn-selesai { background: #0288d1; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .btn-selesai:hover { background: #01579b; }
+        
+        .status-done { color: #2e7d32; font-weight: bold; font-size: 12px; background: #e8f5e9; padding: 4px 8px; border-radius: 4px; }
+        .tgl-kecil { font-size: 11px; color: #999; display: block; margin-top: 4px; }
+        .bus-id { font-size: 16px; color: #d32f2f; }
     </style>
 </head>
 <body>
@@ -42,22 +55,26 @@
     <h2>🛠️ Mekanik Bus TP</h2>
 
     <div class="menu-tabs">
-        <button class="tab-btn active" onclick="openTab('daftar')">Pekerjaan</button>
-        <button class="tab-btn" onclick="openTab('input')">Input Baru</button>
-        <button class="tab-btn" onclick="openTab('riwayat')">Riwayat</button>
+        <button class="tab-btn active" onclick="openTab('daftar', this)">Pekerjaan</button>
+        <button class="tab-btn" onclick="openTab('input', this)">Input Baru</button>
+        <button class="tab-btn" onclick="openTab('riwayat', this)">Riwayat</button>
     </div>
 
     <div id="daftar" class="content-section active">
-        <table>
-            <thead>
-                <tr>
-                    <th>Bus</th>
-                    <th>Perbaikan</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="tabelAktif"></tbody>
-        </table>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bus</th>
+                        <th>Perbaikan</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelAktif">
+                    <tr><td colspan="3" style="text-align:center">Menghubungkan ke database...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <div id="input" class="content-section">
@@ -93,29 +110,31 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Keterangan</label>
-                <textarea id="ket" rows="2" placeholder="Detail kerusakan..."></textarea>
+                <label>Keterangan Tambahan</label>
+                <textarea id="ket" rows="3" placeholder="Contoh: Ganti kampas rem roda belakang kiri..."></textarea>
             </div>
-            <button type="submit" class="btn-submit">SIMPAN DATA</button>
+            <button type="submit" class="btn-submit">SIMPAN KE DATABASE</button>
         </form>
     </div>
 
     <div id="riwayat" class="content-section">
-        <table>
-            <thead>
-                <tr>
-                    <th>Bus & Tanggal</th>
-                    <th>Pekerjaan</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="tabelRiwayat"></tbody>
-        </table>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bus & Tanggal</th>
+                        <th>Pekerjaan</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelRiwayat"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script>
-    // Konfigurasi Firebase Anda
+    // 1. KONFIGURASI FIREBASE (Ganti databaseURL jika perlu)
     const firebaseConfig = {
         apiKey: "AIzaSyDCMPDUZc21Mgc0GtDSyyBCbSaJFvdYYAU",
         authDomain: "list-mekanik.firebaseapp.com",
@@ -123,70 +142,92 @@
         storageBucket: "list-mekanik.firebasestorage.app",
         messagingSenderId: "578557706347",
         appId: "1:578557706347:web:37e6cb783889a6c07b312e",
-        // databaseURL penting untuk Realtime Database
+        // Cek link ini di dashboard Firebase Anda
         databaseURL: "https://list-mekanik-default-rtdb.firebaseio.com" 
     };
 
-    // Initialize Firebase
+    // 2. INITIALIZE
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // Fungsi Tab
-    function openTab(tabId) {
+    // 3. FUNGSI NAVIGASI TAB
+    function openTab(tabId, btn) {
+        // Sembunyikan semua section
         document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        // Nonaktifkan semua tombol
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        
+        // Aktifkan yang dipilih
         document.getElementById(tabId).classList.add('active');
-        event.currentTarget.classList.add('active');
+        btn.classList.add('active');
     }
 
-    // Simpan Data
+    // 4. SIMPAN DATA KE FIREBASE
     document.getElementById('pekerjaanForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const lambung = `TP-${document.getElementById('kodeL').value}-${document.getElementById('nomorL').value}`;
-        
+
         database.ref('tugas').push({
             lambung: lambung,
             pekerjaan: document.getElementById('jenisP').value,
             keterangan: document.getElementById('ket').value,
             tanggal: new Date().toLocaleString('id-ID'),
             status: 'Aktif'
+        })
+        .then(() => {
+            alert('Berhasil: ' + lambung + ' telah ditambahkan.');
+            document.getElementById('pekerjaanForm').reset();
+            // Pindah ke tab daftar secara otomatis
+            const btnDaftar = document.querySelectorAll('.tab-btn')[0];
+            openTab('daftar', btnDaftar);
+        })
+        .catch((err) => {
+            alert('Gagal simpan! Periksa koneksi atau Rules Firebase Anda.');
+            console.error(err);
         });
-
-        document.getElementById('pekerjaanForm').reset();
-        openTab('daftar');
-        alert('Data ' + lambung + ' berhasil dikirim!');
     });
 
-    // Baca Data (Realtime)
+    // 5. BACA DATA SECARA REALTIME
     database.ref('tugas').on('value', (snapshot) => {
         const tabelAktif = document.getElementById('tabelAktif');
         const tabelRiwayat = document.getElementById('tabelRiwayat');
+        
         tabelAktif.innerHTML = "";
         tabelRiwayat.innerHTML = "";
 
+        if (!snapshot.exists()) {
+            tabelAktif.innerHTML = "<tr><td colspan='3' style='text-align:center'>Antrian Kosong</td></tr>";
+            return;
+        }
+
         snapshot.forEach((child) => {
-            const val = child.val();
+            const data = child.val();
             const id = child.key;
 
-            if (val.status === 'Aktif') {
-                tabelAktif.innerHTML += `<tr>
-                    <td><strong>${val.lambung}</strong></td>
-                    <td>${val.pekerjaan}<br><small>${val.keterangan}</small></td>
-                    <td><button class="btn-selesai" onclick="tandaiSelesai('${id}')">Selesai</button></td>
-                </tr>`;
+            if (data.status === 'Aktif') {
+                tabelAktif.innerHTML += `
+                    <tr>
+                        <td><strong class="bus-id">${data.lambung}</strong></td>
+                        <td>${data.pekerjaan}<br><small style="color:#666">${data.keterangan || '-'}</small></td>
+                        <td><button class="btn-selesai" onclick="setSelesai('${id}')">Selesai</button></td>
+                    </tr>`;
             } else {
-                tabelRiwayat.innerHTML += `<tr>
-                    <td><strong>${val.lambung}</strong><span class="tgl-kecil">${val.tanggal}</span></td>
-                    <td>${val.pekerjaan}</td>
-                    <td class="status-done">SELESAI</td>
-                </tr>`;
+                tabelRiwayat.innerHTML += `
+                    <tr>
+                        <td><strong>${data.lambung}</strong><span class="tgl-kecil">${data.tanggal}</span></td>
+                        <td>${data.pekerjaan}</td>
+                        <td><span class="status-done">SELESAI</span></td>
+                    </tr>`;
             }
         });
     });
 
-    function tandaiSelesai(id) {
-        if(confirm('Pindahkan ke riwayat?')) {
-            database.ref('tugas/' + id).update({ status: 'Selesai' });
+    // 6. UPDATE STATUS KE SELESAI
+    function setSelesai(id) {
+        if(confirm('Tandai bus ini sudah selesai diperbaiki?')) {
+            database.ref('tugas/' + id).update({
+                status: 'Selesai'
+            });
         }
     }
 </script>
