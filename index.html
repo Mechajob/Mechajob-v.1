@@ -1,193 +1,128 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mekanik Bus TP - Database Update</title>
-    <style>
-        :root { --primary: #d32f2f; --success: #2e7d32; --bg: #f1f5f9; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); padding: 15px; margin: 0; }
-        .container { max-width: 500px; margin: 20px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: var(--primary); margin-bottom: 20px; }
-        
-        /* Navigasi */
-        .tabs { display: flex; gap: 5px; margin-bottom: 20px; background: #eee; padding: 5px; border-radius: 10px; }
-        .tab-btn { flex: 1; padding: 12px; border: none; cursor: pointer; border-radius: 8px; font-weight: bold; color: #666; transition: 0.3s; }
-        .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        
-        .content { display: none; }
-        .content.active { display: block; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mekanik Bus TP</title>
 
-        /* Form */
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #444; }
-        select, textarea, button { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
-        .row { display: flex; gap: 8px; }
-        textarea { resize: vertical; min-height: 80px; }
-        
-        .btn-save { background: var(--success); color: white; border: none; font-weight: bold; margin-top: 10px; cursor: pointer; }
-        .btn-save:disabled { background: #ccc; cursor: not-allowed; }
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#d32f2f">
 
-        /* Card List */
-        .card { background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--primary); }
-        .card-history { border-left-color: var(--success); }
-        .btn-done { background: #1976d2; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; width: auto; font-size: 14px; }
-    </style>
+<style>
+:root{--primary:#d32f2f;--success:#2e7d32;--bg:#f1f5f9}
+*{box-sizing:border-box;font-family:Segoe UI,sans-serif}
+body{background:var(--bg);margin:0;padding:15px}
+.container{max-width:500px;margin:auto;background:#fff;padding:20px;border-radius:12px}
+h2{text-align:center;color:var(--primary)}
+.tabs{display:flex;gap:5px;margin-bottom:15px}
+.tab-btn{flex:1;padding:10px;border:none;border-radius:8px;font-weight:bold;background:#eee}
+.tab-btn.active{background:var(--primary);color:#fff}
+.content{display:none}
+.content.active{display:block}
+select,textarea,button{width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:1px solid #ccc}
+.card{background:#fff;border:1px solid #ddd;padding:12px;border-radius:8px;margin-bottom:8px}
+.btn{border:none;border-radius:6px;padding:6px 10px;font-weight:bold}
+.done{background:#1976d2;color:#fff}
+.save{background:var(--success);color:#fff}
+.ok{color:green;font-weight:bold}
+small{color:#777}
+</style>
 </head>
+
 <body>
-
 <div class="container">
-    <h2>🛠️ Mekanik Bus TP</h2>
+<h2>🛠️ Mekanik Bus TP</h2>
 
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('tab-daftar', this)">Daftar</button>
-        <button class="tab-btn" onclick="switchTab('tab-input', this)">Input</button>
-        <button class="tab-btn" onclick="switchTab('tab-riwayat', this)">Riwayat</button>
-    </div>
-
-    <div id="tab-daftar" class="content active">
-        <div id="listPekerjaan"><p style="text-align:center">Menghubungkan ke Cloud...</p></div>
-    </div>
-
-    <div id="tab-input" class="content">
-        <form id="mechanicForm">
-            <div class="form-group">
-                <label>Nomor Lambung</label>
-                <div class="row">
-                    <select id="prefix" required>
-                        <option value="A1">A1</option><option value="A2">A2</option><option value="A3">A3</option><option value="A4">A4</option>
-                        <option value="B1">B1</option><option value="B2">B2</option><option value="B3">B3</option><option value="B4">B4</option>
-                        <option value="BS">BS</option><option value="CAD">CAD</option>
-                    </select>
-                    <select id="number" required>
-                        <option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Jenis Perbaikan</label>
-                <select id="jobType" required>
-                    <option value="Ganti Oli">Ganti Oli</option>
-                    <option value="Rem">Sistem Rem</option>
-                    <option value="Kelistrikan">Kelistrikan</option>
-                    <option value="Kaki-kaki">Kaki-kaki</option>
-                    <option value="Mesin">Mesin</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Keterangan</label>
-                <textarea id="note" placeholder="Tulis detail kerusakan..."></textarea>
-            </div>
-            <button type="submit" class="btn-save" id="btnSimpan">SIMPAN DATA</button>
-        </form>
-    </div>
-
-    <div id="tab-riwayat" class="content">
-        <div id="listRiwayat"></div>
-    </div>
+<div class="tabs">
+<button class="tab-btn active" onclick="tab('list',this)">Daftar</button>
+<button class="tab-btn" onclick="tab('input',this)">Input</button>
+<button class="tab-btn" onclick="tab('history',this)">Riwayat</button>
 </div>
 
-<script type="module">
-    // Import Firebase dari CDN
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, update } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+<div id="list" class="content active"></div>
 
-    // Konfigurasi Firebase Anda
-    const firebaseConfig = {
-        apiKey: "AIzaSyDCMPDUZc21Mgc0GtDSyyBCbSaJFvdYYAU",
-        authDomain: "list-mekanik.firebaseapp.com",
-        projectId: "list-mekanik",
-        storageBucket: "list-mekanik.firebasestorage.app",
-        messagingSenderId: "578557706347",
-        appId: "1:578557706347:web:37e6cb783889a6c07b312e",
-        // Menggunakan URL Database Regional Singapore (Umum di Indonesia)
-        databaseURL: "https://list-mekanik-default-rtdb.asia-southeast1.firebasedatabase.app"
-    };
+<div id="input" class="content">
+<select id="bus">
+<option>TP-A1-01</option><option>TP-A1-02</option>
+<option>TP-A2-01</option><option>TP-B1-01</option>
+</select>
 
-    // Inisialisasi Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+<select id="job">
+<option>Ganti Oli</option>
+<option>Sistem Rem</option>
+<option>Kelistrikan</option>
+<option>Kaki-kaki</option>
+<option>Mesin</option>
+</select>
 
-    // Fungsi Navigasi Tab (Daftarkan ke window agar bisa dipanggil onclick)
-    window.switchTab = (id, btn) => {
-        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        btn.classList.add('active');
-    };
+<textarea id="note" placeholder="Keterangan kerusakan..."></textarea>
+<button class="btn save" onclick="simpan()">SIMPAN DATA</button>
+</div>
 
-    // Fungsi Selesai (Daftarkan ke window)
-    window.tandaiSelesai = (id) => {
-        if(confirm("Tandai bus ini sudah selesai diperbaiki?")) {
-            update(ref(db, 'tugas/' + id), { status: 'Selesai' });
-        }
-    };
+<div id="history" class="content"></div>
+</div>
 
-    // PROSES SIMPAN DATA
-    const form = document.getElementById('mechanicForm');
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const btn = document.getElementById('btnSimpan');
-        btn.disabled = true;
-        btn.innerText = "Mengirim...";
+<script>
+let data = JSON.parse(localStorage.getItem("mekanikTP")) || [];
 
-        const data = {
-            lambung: `TP-${document.getElementById('prefix').value}-${document.getElementById('number').value}`,
-            pekerjaan: document.getElementById('jobType').value,
-            keterangan: document.getElementById('note').value,
-            tanggal: new Date().toLocaleString('id-ID'),
-            status: 'Aktif'
-        };
+function tab(id,btn){
+ document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+ btn.classList.add('active');
+ render();
+}
 
-        try {
-            // Push ke path 'tugas'
-            await push(ref(db, 'tugas'), data);
-            alert("✅ Berhasil: Data unit tersimpan ke cloud.");
-            form.reset();
-            // Pindah ke tab daftar setelah sukses
-            window.switchTab('tab-daftar', document.querySelectorAll('.tab-btn')[0]);
-        } catch (error) {
-            console.error(error);
-            alert("❌ Gagal: " + error.message);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "SIMPAN DATA";
-        }
-    });
+function simpan(){
+ if(!bus.value || !job.value) return alert("Lengkapi data!");
+ data.push({
+  bus:bus.value,
+  job:job.value,
+  note:note.value,
+  time:new Date().toLocaleString("id-ID"),
+  status:"Aktif"
+ });
+ localStorage.setItem("mekanikTP",JSON.stringify(data));
+ note.value="";
+ render();
+ tab('list',document.querySelectorAll('.tab-btn')[0]);
+}
 
-    // LOAD DATA SECARA REALTIME
-    onValue(ref(db, 'tugas'), (snapshot) => {
-        const aktifDiv = document.getElementById('listPekerjaan');
-        const riwayatDiv = document.getElementById('listRiwayat');
-        aktifDiv.innerHTML = ""; riwayatDiv.innerHTML = "";
+function selesai(i){
+ if(confirm("Tandai selesai?")){
+  data[i].status="Selesai";
+  localStorage.setItem("mekanikTP",JSON.stringify(data));
+  render();
+ }
+}
 
-        if (!snapshot.exists()) {
-            aktifDiv.innerHTML = "<p align='center'>Belum ada antrian perbaikan</p>";
-            return;
-        }
+function render(){
+ list.innerHTML="";
+ history.innerHTML="";
+ if(data.length===0){
+  list.innerHTML="<p align='center'>Belum ada pekerjaan</p>";
+  return;
+ }
+ data.forEach((d,i)=>{
+  let card=`<div class="card">
+   <b>${d.bus}</b><br>
+   ${d.job}<br>
+   <small>${d.note||'-'}</small><br>
+   <small>${d.time}</small><br>`;
+  if(d.status==="Aktif"){
+   card+=`<button class="btn done" onclick="selesai(${i})">Selesai</button>`;
+   list.innerHTML+=card+"</div>";
+  }else{
+   history.innerHTML+=card+`<span class="ok">✓ OK</span></div>`;
+  }
+ });
+}
+render();
 
-        snapshot.forEach((child) => {
-            const val = child.val();
-            const id = child.key;
-            
-            const itemHtml = `
-                <div class="card ${val.status === 'Selesai' ? 'card-history' : ''}">
-                    <div>
-                        <b style="font-size:18px">${val.lambung}</b><br>
-                        <span style="color:#333">${val.pekerjaan}</span><br>
-                        <small style="color:#777">${val.status === 'Aktif' ? (val.keterangan || '-') : val.tanggal}</small>
-                    </div>
-                    ${val.status === 'Aktif' ? 
-                        `<button onclick="tandaiSelesai('${id}')" class="btn-done">Selesai</button>` : 
-                        `<span style="color:green; font-weight:bold">✓ OK</span>`}
-                </div>`;
-
-            if (val.status === 'Aktif') aktifDiv.innerHTML += itemHtml;
-            else riwayatDiv.innerHTML += itemHtml;
-        });
-    });
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+ navigator.serviceWorker.register('service-worker.js');
+}
 </script>
 </body>
 </html>
