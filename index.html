@@ -113,24 +113,36 @@ function selesai(i){
 function render(){
  list.innerHTML="";
  history.innerHTML="";
- if(data.length===0){
-  list.innerHTML="<p align='center'>Belum ada pekerjaan</p>";
-  return;
- }
+
+ let adaAktif = false;
+ let adaRiwayat = false;
+
  data.forEach((d,i)=>{
-  let card=`<div class="card">
-   <b>${d.lambung}</b><br>
-   ${d.job}<br>
-   <small>${d.note||'-'}</small><br>
-   <small>${d.time}</small><br>`;
-  if(d.status==="Aktif"){
-   card+=`<button class="btn done" onclick="selesai(${i})">Selesai</button>`;
-   list.innerHTML+=card+"</div>";
-  }else{
-   history.innerHTML+=card+`<span class="ok">✓ OK</span></div>`;
+  let card = `<div class="card">
+    <b>${d.lambung}</b><br>
+    ${d.job}<br>
+    <small>${d.note || '-'}</small><br>
+    <small>${d.time}</small><br>`;
+
+  if(d.status === "Aktif"){
+    adaAktif = true;
+    card += `<button class="btn done" onclick="selesai(${i})">Selesai</button>`;
+    list.innerHTML += card + `</div>`;
+  } else {
+    adaRiwayat = true;
+    history.innerHTML += card + `<span class="ok">✓ OK</span></div>`;
   }
  });
+
+ if(!adaAktif){
+  list.innerHTML = "<p align='center'>Tidak ada pekerjaan aktif</p>";
+ }
+
+ if(!adaRiwayat){
+  history.innerHTML = "<p align='center'>Belum ada riwayat</p>";
+ }
 }
+
 render();
 
 // PWA
